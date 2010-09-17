@@ -4,9 +4,7 @@ import inspect
 
 
 class Cache(object):
-    """
-
-    """
+    """Cache and memoizer."""
     
     def __init__(self, store, **kwargs):
         kwargs['store'] = store
@@ -17,16 +15,12 @@ class Cache(object):
         for k, v in self.regions[region].iteritems():
             opts.setdefault(k, v)
         
-    def get(self, key, func, args=(), kwargs={}, **opts):
+    def get(self, key, func=None, args=(), kwargs={}, **opts):
         self._expand_opts(opts)
         store = opts['store']
         
         if not isinstance(key, str):
             raise TypeError('non-string key of type %s' % type(key))
-        
-        namespace = opts.get('namespace')
-        if namespace is not None:
-            key = '%s:%s' % (namespace, key)
         
         pair = store.get(key)
         if pair is not None:
@@ -37,6 +31,9 @@ class Cache(object):
                 del store[key]
             except KeyError:
                 pass
+        
+        if func is None:
+            return None
         
         value = func(*args, **kwargs)
         

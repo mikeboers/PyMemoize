@@ -23,7 +23,7 @@ def test_basic():
     assert cache.get('expires', func, maxage=0.05) == 3
 
 
-def test_namespace():
+def _test_namespace():
     
     store = {}
     cache = Cache(store, namespace='ns')

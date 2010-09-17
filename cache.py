@@ -29,8 +29,9 @@ class Cache(object):
             for k, v in self.regions[region].iteritems():
                 opts.setdefault(k, v)
         
-        if 'namespace' in opts:
-            key = '%s:%s' % (opts['namespace'], key)
+        namespace = opts.get('namespace')
+        if namespace:
+            key = '%s:%s' % (namespace, key)
         
         store = opts['store']
         return key, store

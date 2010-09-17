@@ -87,6 +87,10 @@ def test_region_parents():
     cache.get('key', str, region='b')
     assert store['b:key'] == ('', 1)
     
+    cache.get('key', str, region='b', namespace=None)
+    print store
+    assert store['key'] == ('', 1)
+    
 
 
 def test_func_keys():

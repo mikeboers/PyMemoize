@@ -1,6 +1,6 @@
 
 
-This is a Python persistent memoizing module.
+This is a very configurable Python memoizing module.
 
 Anything dict-like can be used as the actual storage object. We will only ever
 supply string keys (although they may be unicode), and 2-tuple values (the

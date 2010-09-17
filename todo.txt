@@ -1,6 +1,15 @@
 
 - Add locks so we dont have two processes calculating the same thing.
+
 - Decide how to let store handle it's own expiry.
     It could understand the protocol (ie get/set a 2-tuple) and proxy that
     out to the proper methods. If the object has a ttl we should
     use that instead, but understand that it may actually be longer.
+
+- Name this.
+	- MemoStore
+	- EasyCache
+	- SimpleCache
+	- AutoCache
+	- MemoCache
+	

@@ -68,6 +68,23 @@ def test_region():
     print 'default', cache.regions['default']['store']
     print 'a', store_a
     print 'b', store_b
+
+
+def test_region_parents():
+    
+    store = {}
+    cache = Cache(store, namespace='master')
+    cache.regions['a'] = dict(namespace='a')
+    cache.regions['b'] = dict(namespace='b', parent='a')
+    
+    cache.get('key', str)
+    assert 'master:key' in store
+    
+    cache.get('key', str, region='a')
+    assert 'master:a:key' in store
+    
+    cache.get('key', str, region='b')
+    assert 'master:a:b:key' in store
     
 
 
@@ -118,4 +135,4 @@ def test_namespace():
     @cache(namespace='ns2')
     def g(*args): pass
     g(1, 2, 3)
-    assert'ns2:%s.g(1, 2, 3)' % __name__ in store
+    assert'ns:ns2:%s.g(1, 2, 3)' % __name__ in store

@@ -307,6 +307,22 @@ The lock constructor will be called with the key for which a value is about to b
 The `acquire` method will be called with a single float representing the maximum amount of time to block waiting for a lock, and the boolean value of the return value MUST indicate if the lock was acquired. Any exceptions thrown will not be caught. The `release` method will be called only if the lock was acquired.
 
 
+Redis
+-----
+
+We have provided a small wrapper and lock implementation for use with Redis.
+
+    from redis import Redis
+    db = Redis()
+    
+    import autocache.redis
+    store = autocache.redis.wrap(db)
+    
+    cache = autocache.Cache(store)
+    
+    # Use!
+
+
 Store Interface
 ---------------
 

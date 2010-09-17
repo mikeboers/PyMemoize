@@ -139,7 +139,9 @@ An etag is any object that represents the current state of the resources that wi
 Decoration
 ----------
 
-The cache object can be applied as a decorator to a function, which will automatically cache its return values based on the function name, and arguments provided. This is only reliable as long as the `repr` of the arguments is deterministic (ie. no dicts which can change order).
+The cache object can be applied as a decorator to a function, which will automatically cache its return values keyed on the function name, and arguments provided. This is only reliable as long as the `repr` of the arguments is deterministic (ie. no dicts which can change order).
+
+The inclusion of arguments into the key is the primary difference between the direct get method, and using the decorator; functions have effectively been memoized!
 
 You can manually specify a key as a positional argument if there will be a name collision by another function with the same name.
 

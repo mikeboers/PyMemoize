@@ -97,7 +97,7 @@ def test_func_keys():
     def h():
         pass
     
-    assert h.get_key((), {}) == 'key:' + __name__ + '.h()'
+    assert h.get_key((), {}) == "'key':" + __name__ + '.h()'
     
     @cache('key', 'sub')
     def g(a=1, b=2):

@@ -102,7 +102,7 @@ class Cache(object):
         self._expand_opts(opts)
         store = opts['store']
         try:
-            del store['key']
+            del store[key]
         except KeyError:
             pass
     
@@ -123,8 +123,15 @@ class Cache(object):
         store = opts['store']
         pair = store.get(key)
         if pair is None:
-            raise KeyError(key)
-        return max(0, pair[1] - time.time())
+            return None
+        value, expiry = pair
+        if expiry is not None:
+            return max(0, expiry - time.time()) or None
+    
+    def exists(self, key, **opts):
+        self._expand_opts(opts)
+        store = opts['store']
+        return key in store
     
     
     def __call__(self, *args, **opts):
@@ -172,7 +179,10 @@ class CachedFunction(object):
         self.cache.expire_at(self.get_key(args, kwargs), maxage)
         
     def ttl(self, args=(), kwargs={}):
-        self.cache.ttl(self.get_key(args, kwargs))
+        return self.cache.ttl(self.get_key(args, kwargs))
+        
+    def exists(self, args=(), kwargs={}):
+        return self.cache.exists(self.get_key(args, kwargs))
 
 
 

@@ -86,7 +86,6 @@ class Cache(object):
 
 
 
-
 store = {}
 cache = Cache(store)
 

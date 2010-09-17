@@ -2,23 +2,15 @@
 	- MemoStore
 	- EasyCache
 	- SimpleCache
-	- AutoCache
+	- AutoCache (not taken)
 	- MemoCache
 
+- Add etags.
 
-- Decide how to delegate various functions to the store. If we assume that the
-  store is constructed especially for this object then we can look for various
-  methods and assume they are for us. We would want to look for:
-	
-	.set(key, value, expiry)
-		key -> string
-		value -> any
-		expiry -> float
-		
-		This MUST store a tuple of (key, expiry).
-	
-	.ttl(key)
-		key -> string
-		return -> seconds that the key will remain alive for. This does not
-			need to guarantee that the key will expire after that time.
-	
+- Decide if we should store the current time as well, so that something may discarded if the requested maxage has changed.
+
+	cache.get('key', func, maxage=3600)
+	cache.get('key', func, maxage=60) # This will recalculate
+
+- The data tuple will be:
+	(value, creation, expiry, etag)

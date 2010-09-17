@@ -22,15 +22,6 @@ def test_basic():
     time.sleep(0.06)
     assert cache.get('expires', func, maxage=0.05) == 3
 
-
-def _test_namespace():
-    
-    store = {}
-    cache = Cache(store, namespace='ns')
-    cache.get('key', lambda: 'value')
-    assert 'ns:key' in store
-
-
 def test_decorator():
     
     store = {}
@@ -106,3 +97,25 @@ def test_func_keys():
     assert g.get_key((), {})         == "'key','sub':" + __name__ + '.g(1, 2)'
     assert g.get_key((3, ), {})      == "'key','sub':" + __name__ + '.g(3, 2)'
     assert g.get_key((3, ), {'a':2}) == "'key','sub':" + __name__ + '.g(2, 3)'
+
+
+
+
+def test_namespace():
+
+    store = {}
+    cache = Cache(store, namespace='ns')
+    cache.get('key', lambda: 'value')
+    assert 'ns:key' in store
+
+    @cache
+    def f(): pass
+    f()
+    assert'ns:%s.f()' % __name__ in store
+    f.delete()
+    assert'ns:%s.f()' % __name__ not in store
+    
+    @cache(namespace='ns2')
+    def g(*args): pass
+    g(1, 2, 3)
+    assert'ns2:%s.g(1, 2, 3)' % __name__ in store

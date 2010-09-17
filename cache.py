@@ -10,14 +10,17 @@ class Cache(object):
         kwargs['store'] = store
         self.regions = dict(default=kwargs)
     
-    def _expand_opts(self, opts):
+    def _expand_opts(self, key, opts):
         region = opts.get('region', 'default')
         for k, v in self.regions[region].iteritems():
             opts.setdefault(k, v)
+        namespace = opts.get('namespace')
+        if namespace:
+            key = '%s:%s' % (namespace, key)
+        return (key, opts['store'])
         
     def get(self, key, func=None, args=(), kwargs={}, **opts):
-        self._expand_opts(opts)
-        store = opts['store']
+        key, store = self._expand_opts(key, opts)
         
         if not isinstance(key, str):
             raise TypeError('non-string key of type %s' % type(key))
@@ -46,16 +49,14 @@ class Cache(object):
         return value
     
     def delete(self, key, **opts):
-        self._expand_opts(opts)
-        store = opts['store']
+        key, store = self._expand_opts(key, opts)
         try:
             del store[key]
         except KeyError:
             pass
     
     def expire_at(self, key, expiry, **opts):
-        self._expand_opts(opts)
-        store = opts['store']
+        key, store = self._expand_opts(key, opts)
         pair = store.get(key)
         if pair is not None:
             store[key] = (pair[0], expiry)
@@ -66,8 +67,7 @@ class Cache(object):
         self.expire_at(key, time.time() + maxage, **opts)
     
     def ttl(self, key, **opts):
-        self._expand_opts(opts)
-        store = opts['store']
+        key, store = self._expand_opts(key, opts)
         pair = store.get(key)
         if pair is None:
             return None
@@ -76,8 +76,7 @@ class Cache(object):
             return max(0, expiry - time.time()) or None
     
     def exists(self, key, **opts):
-        self._expand_opts(opts)
-        store = opts['store']
+        key, store = self._expand_opts(key, opts)
         return key in store
     
     

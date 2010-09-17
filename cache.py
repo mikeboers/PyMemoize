@@ -73,6 +73,7 @@ class Cache(object):
         maxage = opts.get('maxage')
         if maxage is not None:
             expiry = (expiry or time.time()) + maxage
+        
         store[key] = (value, expiry)
         
         return value
@@ -97,6 +98,8 @@ class Cache(object):
     
     def ttl(self, key, **opts):
         key, store = self._expand_opts(key, opts)
+        if hasattr(store, 'ttl'):
+            return store.ttl(key)
         pair = store.get(key)
         if pair is None:
             return None

@@ -92,7 +92,13 @@ def test_func_keys():
     assert f.get_key((2, 3), {'a':1}) == __name__ + '.f(1, 2, 3)'
     assert f.get_key((3, 4), {'a':1, 'b':2, 'c':5}) == __name__ + '.f(1, 2, 3, 4, c=5)'
     assert f.get_key((1, ), {})   == __name__ + '.f(1, 2)'
-
+    
+    @cache('key')
+    def h():
+        pass
+    
+    assert h.get_key((), {}) == 'key:' + __name__ + '.h()'
+    
     @cache('key', 'sub')
     def g(a=1, b=2):
         pass

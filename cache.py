@@ -94,7 +94,12 @@ class Cache(object):
             # Build the decorator.
             return lambda func: self(func, *args, **opts)
         
-        master_key = ','.join(map(repr, args)) if args else None
+        master_key = None
+        if len(args) == 1:
+            master_key = args[0]
+        elif args:
+            master_key = ','.join(map(repr, args))
+        
         return CachedFunction(self, func, master_key, opts)
 
 

@@ -318,33 +318,33 @@ The valued stored are ALWAYS tuples. The first item is in integer representing t
     3: etag
     4: value
 
-There are constants in autocache.core that hold the index values so you will
-not have to hardcode these (ie. CREATION_INDEX, and ETAG_INDEX).
+There are constants in `autocache.core` that hold the index values so you will
+not have to hardcode these (ie. `CREATION_INDEX`, and `ETAG_INDEX`).
 
-### `Store.__getitem__(key)`
+### Method: `Store.__getitem__(key)`
 
 Return the requested data tuple. MUST raise a KeyError, or return None of the key does not exist.
 
-### `Store.get(key)`
+### Method: `Store.get(key)`
 
 Return the requested data tuple. MUST return None if the key does not exist.
 
-### `Store.__setitem__(key, data_tuple)`
+### Method: `Store.__setitem__(key, data_tuple)`
 
 Store the data tuple. This may optionally set an expiry time with the store's native method. If the native method does not support float times, then round up to the next usable time so that the store does not expire a value before we
 intend it to.
 
 ie. If using a store that has second resolution, set the expiry time to: `math.ceil(expiry)`.
 
-### `Store.__delitem__(key)`
+### Method: `Store.__delitem__(key)`
 
 Delete the data tuple. MAY throw an KeyError.
 
-### `Store.lock(key)` *optional*
+### Method: `Store.lock(key)` *optional*
 
 Return a lock object as specified by the locking section below.
 
-### `Store.ttl(key)` *optional*
+### Method: `Store.ttl(key)` *optional*
 
 Return the time-to-live of the given key as a float, or None if it does not exist or will not expire. If the native expiry mechanism does not support float times then take care that the returned value is less than the "real" expiry time.
 

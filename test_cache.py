@@ -147,24 +147,17 @@ def test_lock():
     
     stack = []
     
-    class ContextLock(object):
+    class Lock(object):
         def __init__(self, key):
             self.key = key
-        def __enter__(self):
+        def acquire(self, timeout):
             stack.append(('lock', self.key))
-        def __exit__(self, *args):
-            stack.append(('unlk', self.key))
-    
-    class MethodLock(object):
-        def __init__(self, key):
-            self.key = key
-        def aquire(self):
-            stack.append(('lock', self.key))
+            return True
         def release(self, *args):
             stack.append(('unlk', self.key))
     
     store = {}
-    cache = Cache(store, lock=ContextLock)
+    cache = Cache(store, lock=Lock)
     
     @cache
     def f(*args, **kwargs):
@@ -172,17 +165,6 @@ def test_lock():
     
     f(1, 2, 3)
     assert stack == [('lock', 'test_cache.f(1, 2, 3)'), ('call', (1, 2, 3), {}), ('unlk', 'test_cache.f(1, 2, 3)')]
-    
-    cache = Cache(store, lock=MethodLock, namespace='ns')
-    stack = []
-    
-    @cache
-    def g(*args, **kwargs):
-        stack.append(('call', args, kwargs))
-        
-    g(4, 5, 6)
-    assert stack == [('lock', 'ns:test_cache.g(4, 5, 6)'), ('call', (4, 5, 6), {}), ('unlk', 'ns:test_cache.g(4, 5, 6)')]
-    
     
     
     

@@ -56,3 +56,20 @@ is after the given one.
 	@short
 	def func():
 	    pass
+
+
+
+Locking
+-------
+
+It is possible that two threads will attempt to generate content at the same time, but that can be a waste of resources. Ergo, you (or the `store`) can provide a locking implementation to attempt to stem this waste.
+
+If the `store` has a `lock` method, that will be used. You can also provide a `lock` option that will override the store's native lock. You can provide a float `timeout` option as well.
+
+The function is the lock constructor, and it will be called with the key for which a value is about to be calculated. The function MUST return an object with an `acquire(timeout)` and a `release()` method. The `acquire` method will be called with a single float representing the maximum amount of time to block waiting for a lock, and the boolean value of the return value MUST indicate if the lock was acquired. Any exceptions thrown will not be caught. The `release` method will be called if the lock was acquired.
+
+
+
+
+
+

@@ -29,4 +29,25 @@ def test_namespace():
     cache = Cache(store, namespace='ns')
     cache.get('key', lambda: 'value')
     assert ('ns', 'key') in store
+
+
+def test_decorator():
     
+    store = {}
+    record = []
+    cache = Cache(store)
+    
+    @cache
+    def func_1(arg=1):
+        record.append(arg)
+        return arg
+    
+    assert func_1(1) == 1
+    assert len(record) == 1
+    assert func_1(1) == 1
+    assert len(record) == 1
+    assert func_1(2) == 2
+    assert len(record) == 2
+
+
+

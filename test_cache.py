@@ -50,4 +50,31 @@ def test_decorator():
     assert len(record) == 2
 
 
-
+def test_region():
+    
+    store_a = {}
+    store_b = {}
+    cache = Cache({})
+    cache.regions.update(
+        a=dict(store=store_a),
+        b=dict(store=store_b),
+    )
+    
+    @cache(region='a')
+    def func1():
+        return 1
+    @cache(region='b')
+    def func2():
+        return 2
+    
+    assert func1() == 1
+    assert len(store_a) == 1
+    assert len(store_b) == 0
+    
+    assert func2() == 2
+    assert len(store_b) == 1
+    
+    print 'default', cache.regions['default']['store']
+    print 'a', store_a
+    print 'b', store_b
+    

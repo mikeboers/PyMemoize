@@ -105,7 +105,7 @@ class Cache(object):
             args = args[1:]
         else:
             # Build the decorator.
-            return lambda func: self(func, *args, **kwargs)
+            return lambda func: self(func, *args, **opts)
         
         master_key = args
         if not master_key:

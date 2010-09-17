@@ -21,9 +21,12 @@ class Cache(object):
         self._expand_opts(opts)
         store = opts['store']
         
+        if not isinstance(key, str):
+            raise TypeError('non-string key of type %s' % type(key))
+        
         namespace = opts.get('namespace')
         if namespace is not None:
-            key = (namespace, key)
+            key = '%s:%s' % (namespace, key)
         
         pair = store.get(key)
         if pair is not None:

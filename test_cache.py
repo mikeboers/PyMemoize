@@ -28,7 +28,7 @@ def test_namespace():
     store = {}
     cache = Cache(store, namespace='ns')
     cache.get('key', lambda: 'value')
-    assert ('ns', 'key') in store
+    assert 'ns:key' in store
 
 
 def test_decorator():

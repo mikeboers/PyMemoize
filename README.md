@@ -310,7 +310,16 @@ Keys are ALWAYS strings.
 
 ### On stored values
 
-The valued stored are ALWAYS 2-tuples: the first item is the actual value to be cached, and the second is either None, or a float of the unix time at which the value will expire.
+The valued stored are ALWAYS tuples. The first item is in integer representing the current protocol version (currently 1). For protocol 1 the fields are:
+
+    0: protocol version (always 1, thus far)
+    1: creation time
+    2: expiry time
+    3: etag
+    4: value
+
+There are constants in autocache.core that hold the index values so you will
+not have to hardcode these (ie. CREATION_INDEX, and ETAG_INDEX).
 
 ### `Store.__getitem__(key)`
 

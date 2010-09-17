@@ -40,6 +40,28 @@ class Cache(object):
         return key, store
         
     def get(self, key, func=None, args=(), kwargs={}, **opts):
+        """Manually retrieve a value from the cache, calculating as needed.
+        
+        Params:
+            key -> string to store/retrieve value from.
+            func -> callable to generate value if it does not exist, or has
+                expired.
+            args -> positional arguments to call the function with.
+            kwargs -> keyword arguments to call the function with.
+        
+        Keyword Params (options):
+            These will be combined with region values (as selected by the 
+            "region" keyword argument, and then selected by "parent" values
+            of those regions all the way up the chain to the "default" region).
+            
+            namespace -> string prefix to apply to the key before get/set.
+            lock -> lock constructor. See README.
+            expiry -> float unix expiration time.
+            maxage -> float number of seconds until the value expires. Only
+                provide expiry OR maxage, not both.
+            
+        """
+        
         key, store = self._expand_opts(key, opts)
         
         if not isinstance(key, str):

@@ -16,7 +16,7 @@ cache = Cache(default_store, namespace='namespace')
 cache.get('key', func, args=(), kwargs={}, maxage=None)
 
 # Manually remove something.
-cache.del(key)
+cache.delete(key)
 cache.expire(key, ttl)
 cache.expire_at(key, time)
 cache.ttl(key)
@@ -79,12 +79,16 @@ class Cache(object):
             key = (namespace, key)
         
         try:
-            value, expiry = store[key]
+            x = store[key]
+            if x is None or len(x) != 2:
+                raise KeyError(key)
+            value, expiry = x
             if expiry is None or expiry > time.time():
                 return value
             # This must be covered by the parent KeyError as well.
             del store[key]
-        except KeyError:
+        # TypeError is f
+        except KeyError, TypeError:
             pass
         
         value = func(*args, **kwargs)

@@ -74,17 +74,18 @@ def test_region_parents():
     
     store = {}
     cache = Cache(store, namespace='master')
-    cache.regions['a'] = dict(namespace='a')
+    cache.regions['a'] = dict(namespace='a', expiry=1)
     cache.regions['b'] = dict(namespace='b', parent='a')
     
     cache.get('key', str)
     assert 'master:key' in store
+    assert store['master:key'] == ('', None)
     
     cache.get('key', str, region='a')
-    assert 'master:a:key' in store
+    assert store['a:key'] == ('', 1)
     
     cache.get('key', str, region='b')
-    assert 'master:a:b:key' in store
+    assert store['b:key'] == ('', 1)
     
 
 
@@ -135,4 +136,4 @@ def test_namespace():
     @cache(namespace='ns2')
     def g(*args): pass
     g(1, 2, 3)
-    assert'ns:ns2:%s.g(1, 2, 3)' % __name__ in store
+    assert'ns2:%s.g(1, 2, 3)' % __name__ in store

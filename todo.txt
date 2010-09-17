@@ -6,6 +6,13 @@
     out to the proper methods. If the object has a ttl we should
     use that instead, but understand that it may actually be longer.
 
+- Make heirarchical namespaces apply to decorated functions too.
+
+	@cache(namespace='a')
+	def f(): pass
+	
+	f.get(namespace='b') -> key = 'a:b:__module__.f()'
+	
 - Name this.
 	- MemoStore
 	- EasyCache

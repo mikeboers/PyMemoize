@@ -11,13 +11,7 @@ class Cache(object):
         self.regions = dict(default=kwargs)
     
     def _expand_opts(self, key, opts):
-        
-        # We will construct the key out of the given key and all of the
-        # namespaces in the heirarchy.
-        key = [key]
-        if 'namespace' in opts:
-            key.append(opts['namespace'])
-        
+                
         region = None
         while region != 'default':
             
@@ -33,11 +27,11 @@ class Cache(object):
             
             # Apply the region settings to the options.
             for k, v in self.regions[region].iteritems():
-                if k == 'namespace':
-                    key.append(v)
                 opts.setdefault(k, v)
         
-        key = ':'.join(reversed(key))
+        if 'namespace' in opts:
+            key = '%s:%s' % (opts['namespace'], key)
+        
         store = opts['store']
         return key, store
         

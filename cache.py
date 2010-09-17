@@ -55,7 +55,23 @@ class Cache(object):
         if func is None:
             return None
         
-        value = func(*args, **kwargs)
+        lock_func = opts.get('lock')
+        lock = lock_func(key) if lock_func else None
+        
+        # Calculate the value, using a lock if we have one. Try using the lock
+        # object as a context manager first, then fall back to the standard
+        # aquire/release methods.
+        if lock and hasattr(lock, '__enter__'):
+            with lock:
+                value = func(*args, **kwargs)
+        elif lock:
+            try:
+                lock.aquire()
+                value = func(*args, **kwargs)
+            finally:
+                lock.release()
+        else:
+            value = func(*args, **kwargs)
         
         expiry = opts.get('expiry')
         maxage = opts.get('maxage')

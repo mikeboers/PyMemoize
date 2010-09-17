@@ -121,8 +121,6 @@ def test_func_keys():
     assert g.get_key((3, ), {'a':2}) == "'key','sub':" + __name__ + '.g(2, 3)'
 
 
-
-
 def test_namespace():
 
     store = {}
@@ -141,3 +139,50 @@ def test_namespace():
     def g(*args): pass
     g(1, 2, 3)
     assert'ns2:%s.g(1, 2, 3)' % __name__ in store
+
+
+
+
+def test_lock():
+    
+    stack = []
+    
+    class ContextLock(object):
+        def __init__(self, key):
+            self.key = key
+        def __enter__(self):
+            stack.append(('lock', self.key))
+        def __exit__(self, *args):
+            stack.append(('unlk', self.key))
+    
+    class MethodLock(object):
+        def __init__(self, key):
+            self.key = key
+        def aquire(self):
+            stack.append(('lock', self.key))
+        def release(self, *args):
+            stack.append(('unlk', self.key))
+    
+    store = {}
+    cache = Cache(store, lock=ContextLock)
+    
+    @cache
+    def f(*args, **kwargs):
+        stack.append(('call', args, kwargs))
+    
+    f(1, 2, 3)
+    assert stack == [('lock', 'test_cache.f(1, 2, 3)'), ('call', (1, 2, 3), {}), ('unlk', 'test_cache.f(1, 2, 3)')]
+    
+    cache = Cache(store, lock=MethodLock, namespace='ns')
+    stack = []
+    
+    @cache
+    def g(*args, **kwargs):
+        stack.append(('call', args, kwargs))
+        
+    g(4, 5, 6)
+    assert stack == [('lock', 'ns:test_cache.g(4, 5, 6)'), ('call', (4, 5, 6), {}), ('unlk', 'ns:test_cache.g(4, 5, 6)')]
+    
+    
+    
+    

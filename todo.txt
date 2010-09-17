@@ -1,5 +1,10 @@
 
-- Add locks so we dont have two processes calculating the same thing.
+- Add locks so we don't have two processes calculating the same thing.
+	I can only see this working if we are passed a constructor to a lock.
+
+
+
+
 
 - Decide how to let store handle it's own expiry.
     It could understand the protocol (ie get/set a 2-tuple) and proxy that

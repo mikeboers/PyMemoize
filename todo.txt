@@ -1,0 +1,9 @@
+
+- Add locks so we dont have two processes calculating the same thing.
+- Decide how to let store handle it's own expiry.
+    It could understand the protocol (ie get/set a 2-tuple) and proxy that
+    out to the proper methods. Using redis expireat after setting the value
+    and then returning the ttl on access. If the object has a ttl we should
+    use that instead.
+- Function signature should be more aware of kwargs that override
+  positions args.

@@ -2,8 +2,16 @@
 
 This is a Python persistent memoizing module.
 
-Anything dict-like can be used as the actual storage object as long as it
-supports standard key types (ie, strings, ints, tuples of these).
+Anything dict-like can be used as the actual storage object. We will only ever
+supply string keys (although they may be unicode), and 2-tuple values (the
+first element being the actual value, the second being a float of the unix
+time at which the value expires).
+
+Any store which has its own expiry mechanism should use the second item to set
+the native expiry time. If the native mechanism does not support float expiry
+times (ie. only ints like redis) then take care to make sure the native expiry
+is after the given one.
+
 
 	# Initialize the cache object.
 	cache = Cache(default_store, namespace='namespace')

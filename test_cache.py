@@ -78,3 +78,25 @@ def test_region():
     print 'a', store_a
     print 'b', store_b
     
+
+
+def test_func_keys():
+    
+    cache = Cache({})
+    
+    @cache
+    def f(a, b=2, *args, **kwargs):
+        pass
+    
+    assert f.get_key((1, 2, 3), {})   == __name__ + '.f(1, 2, 3)'
+    assert f.get_key((2, 3), {'a':1}) == __name__ + '.f(1, 2, 3)'
+    assert f.get_key((3, 4), {'a':1, 'b':2, 'c':5}) == __name__ + '.f(1, 2, 3, 4, c=5)'
+    assert f.get_key((1, ), {})   == __name__ + '.f(1, 2)'
+
+    @cache('key', 'sub')
+    def g(a=1, b=2):
+        pass
+    
+    assert g.get_key((), {})         == "'key','sub':" + __name__ + '.g(1, 2)'
+    assert g.get_key((3, ), {})      == "'key','sub':" + __name__ + '.g(3, 2)'
+    assert g.get_key((3, ), {'a':2}) == "'key','sub':" + __name__ + '.g(2, 3)'

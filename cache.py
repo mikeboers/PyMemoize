@@ -1,7 +1,7 @@
-
-
 import time
 import functools
+import inspect
+
 
 class Cache(object):
     """
@@ -91,10 +91,7 @@ class Cache(object):
             # Build the decorator.
             return lambda func: self(func, *args, **opts)
         
-        master_key = args
-        if not master_key:
-            master_key = '%s:%s' % (func.__module__, func.__name__)
-        
+        master_key = ','.join(map(repr, args)) if args else None
         return CachedFunction(self, func, master_key, opts)
 
 
@@ -110,8 +107,35 @@ class CachedFunction(object):
         return '<%s of %s via %s>' % (self.__class__.__name__, self.func, self.cache)
     
     def get_key(self, args, kwargs):
-        frozen_kwargs = tuple(sorted(kwargs.items()))
-        return (self.master_key, args, frozen_kwargs)
+        # We need to normalize the signature of the function. This is only
+        # really possible if we wrap the "real" function.
+        spec = inspect.getargspec(self.func)
+        
+        # Insert kwargs into the args list by name.
+        orig_args = list(args)
+        args = []
+        for i, name in enumerate(spec.args):
+            if name in kwargs:
+                args.append(kwargs.pop(name))
+            elif orig_args:
+                args.append(orig_args.pop(0))
+            else:
+                break
+        
+        args.extend(orig_args)
+        
+        # Add on as many defaults as we need to.
+        if spec.defaults:
+            offset = len(spec.args) - len(spec.defaults)
+            args.extend(spec.defaults[len(args) - offset:])
+        
+        arg_str_chunks = map(repr, args)
+        for pair in kwargs.iteritems():
+            arg_str_chunks.append('%s=%r' % pair)
+        arg_str = ', '.join(arg_str_chunks)
+        
+        key = '%s.%s(%s)' % (self.func.__module__, self.func.__name__, arg_str)
+        return self.master_key + ':' + key if self.master_key else key
             
     def __call__(self, *args, **kwargs):
         return self.cache.get(self.get_key(args, kwargs), self.func, args, kwargs, **self.opts)

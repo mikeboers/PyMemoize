@@ -105,6 +105,10 @@ class CachedFunction(object):
     def __repr__(self):
         return '<%s of %s via %s>' % (self.__class__.__name__, self.func, self.cache)
     
+    def _expand_opts(self, opts):
+        for k, v in self.opts.iteritems():
+            opts.setdefault(k, v)
+    
     def get_key(self, args, kwargs):
         # We need to normalize the signature of the function. This is only
         # really possible if we wrap the "real" function.
@@ -139,19 +143,28 @@ class CachedFunction(object):
     def __call__(self, *args, **kwargs):
         return self.cache.get(self.get_key(args, kwargs), self.func, args, kwargs, **self.opts)
     
-    def delete(self, args=(), kwargs={}):
+    def get(self, args=(), kwargs={}, **opts):
+        self._expand_opts(opts)
+        return self.cache.get(self.get_key(args, kwargs), self.func, args, kwargs, **opts)
+    
+    def delete(self, args=(), kwargs={}, **opts):
+        self._expand_opts(opts)
         self.cache.delete(self.get_key(args, kwargs))
     
-    def expire(self, maxage, args=(), kwargs={}):
+    def expire(self, maxage, args=(), kwargs={}, **opts):
+        self._expand_opts(opts)
         self.cache.expire(self.get_key(args, kwargs), maxage)
         
-    def expire_at(self, maxage, args=(), kwargs={}):
+    def expire_at(self, maxage, args=(), kwargs={}, **opts):
+        self._expand_opts(opts)
         self.cache.expire_at(self.get_key(args, kwargs), maxage)
         
-    def ttl(self, args=(), kwargs={}):
+    def ttl(self, args=(), kwargs={}, **opts):
+        self._expand_opts(opts)
         return self.cache.ttl(self.get_key(args, kwargs))
         
-    def exists(self, args=(), kwargs={}):
+    def exists(self, args=(), kwargs={}, **opts):
+        self._expand_opts(opts)
         return self.cache.exists(self.get_key(args, kwargs))
 
 

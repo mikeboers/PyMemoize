@@ -19,7 +19,9 @@ def test_basic():
     # Keys should expire.
     assert cache.get('expires', func, maxage=0.05) == 2
     assert cache.get('expires', func, maxage=0.05) == 2
+    assert cache.exists('expires')
     time.sleep(0.06)
+    assert not cache.exists('expires')
     assert cache.get('expires', func, maxage=0.05) == 3
 
 def test_decorator():

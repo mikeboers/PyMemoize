@@ -101,6 +101,7 @@ class Cache(object):
         return value
     
     def delete(self, key, **opts):
+        """Remove a key from the cache."""
         key, store = self._expand_opts(key, opts)
         try:
             del store[key]
@@ -108,6 +109,7 @@ class Cache(object):
             pass
     
     def expire_at(self, key, expiry, **opts):
+        """Set the explicit unix expiry time of a key."""
         key, store = self._expand_opts(key, opts)
         pair = store.get(key)
         if pair is not None:
@@ -116,9 +118,11 @@ class Cache(object):
             raise KeyError(key)
     
     def expire(self, key, maxage, **opts):
+        """Set the maximum age of a given key, in seconds."""
         self.expire_at(key, time.time() + maxage, **opts)
     
     def ttl(self, key, **opts):
+        """Get the time-to-live of a given key; None if not set."""
         key, store = self._expand_opts(key, opts)
         if hasattr(store, 'ttl'):
             return store.ttl(key)
@@ -130,12 +134,21 @@ class Cache(object):
             return max(0, expiry - time.time()) or None
     
     def exists(self, key, **opts):
+        """Return if a key exists in the cache."""
         key, store = self._expand_opts(key, opts)
-        return key in store
+        if key not in store:
+            return False
+        if store[key][1] < time.time():
+            try:
+                del store[key]
+            except KeyError:
+                pass
+            return False
+        return True
     
     
     def __call__(self, *args, **opts):
-        """Decorator."""
+        """A decorator to wrap around a function."""
         
         if args and hasattr(args[0], '__call__'):
             func = args[0]

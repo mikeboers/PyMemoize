@@ -120,6 +120,8 @@ Decoration
 
 The cache object can be applied as a decorator to a function, which will automatically cache its return values based on the function name, and arguments provided. This is only reliable as long as the `repr` of the arguments is deterministic (ie. no dicts which can change order).
 
+You can manually specify a key as a positional argument if there will be a name collision by another function with the same name.
+
 ***Note:*** Most options we have used previously are perfectly valid to use in the decorator declaration, with an obvious exception of arguments as those are handled by calling the function. Features that we will explain on the decorators (ie. regions, locks, etc) apply equally to the direct get method.
 
 Basic usage:

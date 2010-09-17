@@ -78,18 +78,15 @@ class Cache(object):
         if namespace is not None:
             key = (namespace, key)
         
-        try:
-            x = store[key]
-            if x is None or len(x) != 2:
-                raise KeyError(key)
-            value, expiry = x
+        pair = store.get(key)
+        if pair is not None:
+            value, expiry = pair
             if expiry is None or expiry > time.time():
                 return value
-            # This must be covered by the parent KeyError as well.
-            del store[key]
-        # TypeError is f
-        except KeyError, TypeError:
-            pass
+            try:
+                del store[key]
+            except KeyError:
+                pass
         
         value = func(*args, **kwargs)
         
@@ -100,6 +97,14 @@ class Cache(object):
         store[key] = (value, expiry)
         
         return value
+    
+    def delete(self, key, **opts):
+        self._expand_opts(opts)
+        store = opts['store']
+        try:
+            del store['key']
+        except KeyError:
+            pass
     
     def __call__(self, *args, **opts):
         """Decorator."""

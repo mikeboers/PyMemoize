@@ -65,6 +65,10 @@ class Cache(object):
             opts.setdefault(k, v)
         store = opts['store']
         
+        namespace = opts.get('namespace')
+        if namespace is not None:
+            key = (namespace, key)
+        
         try:
             value, expiry = store[key]
             if expiry is None or expiry > time.time():
@@ -86,17 +90,6 @@ class Cache(object):
 
 
 
-store = {}
-cache = Cache(store)
-
-
-def func(*args, **kwargs):
-    print 'func(*%r, **%r)' % (args, kwargs)
-    return 'done'
-
-x = cache.get('key', func)
-print x
-print x
 
 
 

@@ -192,7 +192,29 @@ def test_etag():
     
     # It does not go up here.
     assert cache.get('key', func) == 3
-        
+
+
+def test_dynamic_maxage():
+    
+    store = {}
+    cache = Cache(store)
+    
+    def func():
+        func.count += 1
+        return func.count
+    func.count = 0
+    
+    assert cache.get('key', func, maxage=10) == 1
+    assert cache.get('key', func, maxage=10) == 1
+    
+    # This will not recalculate as 1 second has not passed.
+    assert cache.get('key', func, maxage=1) == 1
+    
+    time.sleep(0.01)
+    
+    # This should recalculate.
+    assert cache.get('key', func, maxage=0.005) == 2
+    
     
     
     

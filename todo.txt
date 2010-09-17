@@ -3,12 +3,6 @@
 	- AutoCache (not taken)
 	- MemoStore
 
-- Add etags.
+- Note that store implementors should use the INDEX constants.
 
-- Decide if we should store the current time as well, so that something may discarded if the requested maxage has changed.
-
-	cache.get('key', func, maxage=3600)
-	cache.get('key', func, maxage=60) # This will recalculate
-
-- The data tuple will be:
-	(creation, expiry, etag, value)
+- Consider renaming maxage to max_age everywhere.

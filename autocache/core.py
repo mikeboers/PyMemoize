@@ -56,7 +56,7 @@ class Cache(object):
         # It is expired if an etag has been set and provided, but they don't
         # match.
         etag = opts.get('etag')
-        if etag is not None and old_etag is not None and etag != old_etag:
+        if etag is not None and etag != old_etag:
             return True
         
         # The new expiry time is too old. This seems odd to do... Oh well.
@@ -106,10 +106,6 @@ class Cache(object):
         if data is not None:
             if not self._has_expired(data, opts):
                 return data[VALUE_INDEX]
-            try:
-                del store[key]
-            except KeyError:
-                pass
         
         if func is None:
             return None
@@ -172,17 +168,18 @@ class Cache(object):
         if expiry is not None:
             return max(0, expiry - time.time()) or None
     
+    def etag(self, key, **opts):
+        key, store = self._expand_opts(key, opts)
+        data = store.get(key)
+        return data and data[ETAG_INDEX]
+    
     def exists(self, key, **opts):
         """Return if a key exists in the cache."""
         key, store = self._expand_opts(key, opts)
         data = store.get(key)
-        if data is None:
-            return False
-        if self._has_expired(data, opts):
-            try:
-                del store[key]
-            except KeyError:
-                pass
+        # Note that we do not actually delete the thing here as the maxage
+        # just for this call may have triggered a False.
+        if not data or self._has_expired(data, opts):
             return False
         return True
     

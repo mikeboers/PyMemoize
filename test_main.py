@@ -169,5 +169,31 @@ def test_lock():
     f(1, 2, 3)
     assert stack == [('lock', 'test_main.f(1, 2, 3)'), ('call', (1, 2, 3), {}), ('unlk', 'test_main.f(1, 2, 3)')]
     
+
+
+def test_etag():
+    
+    store = {}
+    cache = Cache(store)
+    
+    def func():
+        func.count += 1
+        return func.count
+    func.count = 0
+    
+    assert cache.get('key', func) == 1
+    assert cache.etag('key') is None
+    
+    assert cache.get('key', func, etag='a') == 2
+    assert cache.etag('key') == 'a'
+    
+    assert cache.get('key', func, etag='b') == 3
+    assert cache.etag('key') == 'b'
+    
+    # It does not go up here.
+    assert cache.get('key', func) == 3
+        
+    
+    
     
     

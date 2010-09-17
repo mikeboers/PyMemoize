@@ -115,6 +115,27 @@ You can see how much time is left until something expires, or set an expiration 
     cache.ttl('expires')
     # return > something slightly less than 3600
 
+Etags
+-----
+
+If you need to regenerate your content based off an external resource that is not reflected by the arguments of the function when called, then you can use etags. 
+
+An etag is any object that represents the current state of the resources that will be drawn upon to generate the final value. If the etag changes then it is assumed that the value is out of date. Note that not providing an etag will not trigger a regeneration.
+
+    store = {}
+    cache = Cache(store)
+    
+    cache.get('etagged', basic_func, etag='a')
+    # stdout > called
+    
+    # Doesnt call the function again if the etag is the same.
+    cache.get('etagged', basic_func, etag='a')
+    
+    # Change the etag.
+    cache.get('etagged', basic_func, etag='b')
+    # stdout > called
+    
+
 Decoration
 ----------
 

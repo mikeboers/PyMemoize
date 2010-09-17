@@ -1,6 +1,6 @@
 
 import time
-from cache import Cache
+from autocache import Cache
 
 def test_basic():
     

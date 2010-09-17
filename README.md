@@ -1,7 +1,7 @@
-<Name of Package>
+AutoCache
 =================
 
-This is a (relatively) simple Python memoizing module (ie. a function cache), in which any dict-like can be used as the actual storage object.
+This is a (relatively) simple Python cache and memoizing module (ie. a function cache), in which any dict-like can be used as the actual storage object.
 
 Basics
 ------

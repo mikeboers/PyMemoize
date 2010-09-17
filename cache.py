@@ -106,6 +106,27 @@ class Cache(object):
         except KeyError:
             pass
     
+    def expire_at(self, key, expiry, **opts):
+        self._expand_opts(opts)
+        store = opts['store']
+        pair = store.get(key)
+        if pair is not None:
+            store[key] = (pair[0], expiry)
+        else:
+            raise KeyError(key)
+    
+    def expire(self, key, maxage, **opts):
+        self.expire_at(key, time.time() + maxage, **opts)
+    
+    def ttl(self, key, **opts):
+        self._expand_opts(opts)
+        store = opts['store']
+        pair = store.get(key)
+        if pair is None:
+            raise KeyError(key)
+        return max(0, pair[1] - time.time())
+    
+    
     def __call__(self, *args, **opts):
         """Decorator."""
         
@@ -120,16 +141,38 @@ class Cache(object):
         if not master_key:
             master_key = '%s:%s' % (func.__module__, func.__name__)
         
-        @functools.wraps(func)
-        def _func(*args, **kwargs):
-            frozen_kwargs = tuple(sorted(kwargs.items()))
-            key = (master_key, args, frozen_kwargs)
-            return self.get(key, func, args, kwargs, **opts)
+        return CachedFunction(self, func, master_key, opts)
+
+
+class CachedFunction(object):
+    
+    def __init__(self, cache, func, master_key, opts):
+        self.cache = cache
+        self.func = func
+        self.master_key = master_key
+        self.opts = opts
+    
+    def __repr__(self):
+        return '<%s of %s via %s>' % (self.__class__.__name__, self.func, self.cache)
+    
+    def get_key(self, args, kwargs):
+        frozen_kwargs = tuple(sorted(kwargs.items()))
+        return (self.master_key, args, frozen_kwargs)
+            
+    def __call__(self, *args, **kwargs):
+        return self.cache.get(self.get_key(args, kwargs), self.func, args, kwargs, **self.opts)
+    
+    def delete(self, args=(), kwargs={}):
+        self.cache.delete(self.get_key(args, kwargs))
+    
+    def expire(self, maxage, args=(), kwargs={}):
+        self.cache.expire(self.get_key(args, kwargs), maxage)
         
-        return _func
-
-
-
+    def expire_at(self, maxage, args=(), kwargs={}):
+        self.cache.expire_at(self.get_key(args, kwargs), maxage)
+        
+    def ttl(self, args=(), kwargs={}):
+        self.cache.ttl(self.get_key(args, kwargs))
 
 
 

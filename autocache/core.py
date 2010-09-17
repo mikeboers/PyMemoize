@@ -99,6 +99,10 @@ class Cache(object):
         
         key, store = self._expand_opts(key, opts)
         
+        # Create a dynamic etag.
+        if opts.get('etag') is None and opts.get('etagger'):
+            opts['etag'] = opts['etagger'](*args, **kwargs)
+        
         if not isinstance(key, str):
             raise TypeError('non-string key of type %s' % type(key))
         
@@ -213,7 +217,7 @@ class CachedFunction(object):
         for k, v in self.opts.iteritems():
             opts.setdefault(k, v)
     
-    def get_key(self, args, kwargs):
+    def key(self, args=(), kwargs={}):
         # We need to normalize the signature of the function. This is only
         # really possible if we wrap the "real" function.
         spec = inspect.getargspec(self.func)
@@ -245,31 +249,35 @@ class CachedFunction(object):
         return self.master_key + ':' + key if self.master_key else key
             
     def __call__(self, *args, **kwargs):
-        return self.cache.get(self.get_key(args, kwargs), self.func, args, kwargs, **self.opts)
+        return self.cache.get(self.key(args, kwargs), self.func, args, kwargs, **self.opts)
     
     def get(self, args=(), kwargs={}, **opts):
         self._expand_opts(opts)
-        return self.cache.get(self.get_key(args, kwargs), self.func, args, kwargs, **opts)
+        return self.cache.get(self.key(args, kwargs), self.func, args, kwargs, **opts)
     
     def delete(self, args=(), kwargs={}, **opts):
         self._expand_opts(opts)
-        self.cache.delete(self.get_key(args, kwargs))
+        self.cache.delete(self.key(args, kwargs))
     
     def expire(self, maxage, args=(), kwargs={}, **opts):
         self._expand_opts(opts)
-        self.cache.expire(self.get_key(args, kwargs), maxage)
+        self.cache.expire(self.key(args, kwargs), maxage)
         
     def expire_at(self, maxage, args=(), kwargs={}, **opts):
         self._expand_opts(opts)
-        self.cache.expire_at(self.get_key(args, kwargs), maxage)
+        self.cache.expire_at(self.key(args, kwargs), maxage)
         
     def ttl(self, args=(), kwargs={}, **opts):
         self._expand_opts(opts)
-        return self.cache.ttl(self.get_key(args, kwargs))
+        return self.cache.ttl(self.key(args, kwargs))
         
     def exists(self, args=(), kwargs={}, **opts):
         self._expand_opts(opts)
-        return self.cache.exists(self.get_key(args, kwargs))
+        return self.cache.exists(self.key(args, kwargs))
+        
+    def etag(self, args=(), kwargs={}, **opts):
+        self._expand_opts(opts)
+        return self.cache.etag(self.key(args, kwargs))
 
 
 

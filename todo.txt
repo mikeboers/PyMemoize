@@ -5,4 +5,7 @@
 
 - Note that store implementors should use the INDEX constants.
 
+- etagger is a function which takes the same args and the real function, and
+  returns an etag.
+
 - Consider renaming maxage to max_age everywhere.

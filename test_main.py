@@ -166,7 +166,7 @@ def test_lock():
         stack.append(('call', args, kwargs))
     
     f(1, 2, 3)
-    assert stack == [('lock', 'test_cache.f(1, 2, 3)'), ('call', (1, 2, 3), {}), ('unlk', 'test_cache.f(1, 2, 3)')]
+    assert stack == [('lock', 'test_main.f(1, 2, 3)'), ('call', (1, 2, 3), {}), ('unlk', 'test_main.f(1, 2, 3)')]
     
     
     

@@ -1,9 +1,7 @@
 - Name this.
-	- MemoStore
-	- EasyCache
-	- SimpleCache
 	- AutoCache (not taken)
 	- MemoCache
+	- MemoStore
 
 - Add etags.
 

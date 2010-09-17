@@ -134,6 +134,14 @@ An etag is any object that represents the current state of the resources that wi
     # Change the etag.
     cache.get('etagged', basic_func, etag='b')
     # stdout > called
+
+You can also supply a function that is called with the same arguments that the function will be called with, and its return value is used as the etag.
+
+    state = []
+    def get_etag():
+        return len(state)
+    
+    cache.get('etagged', basic_func, etagger=get_etag)
     
 
 Decoration

@@ -104,24 +104,24 @@ def test_func_keys():
     def f(a, b=2, *args, **kwargs):
         pass
     
-    assert f.get_key((1, 2, 3), {})   == __name__ + '.f(1, 2, 3)'
-    assert f.get_key((2, 3), {'a':1}) == __name__ + '.f(1, 2, 3)'
-    assert f.get_key((3, 4), {'a':1, 'b':2, 'c':5}) == __name__ + '.f(1, 2, 3, 4, c=5)'
-    assert f.get_key((1, ), {})   == __name__ + '.f(1, 2)'
+    assert f.key((1, 2, 3), {})   == __name__ + '.f(1, 2, 3)'
+    assert f.key((2, 3), {'a':1}) == __name__ + '.f(1, 2, 3)'
+    assert f.key((3, 4), {'a':1, 'b':2, 'c':5}) == __name__ + '.f(1, 2, 3, 4, c=5)'
+    assert f.key((1, ), {})   == __name__ + '.f(1, 2)'
     
     @cache('key')
     def h():
         pass
     
-    assert h.get_key((), {}) == "'key':" + __name__ + '.h()'
+    assert h.key((), {}) == "'key':" + __name__ + '.h()'
     
     @cache('key', 'sub')
     def g(a=1, b=2):
         pass
     
-    assert g.get_key((), {})         == "'key','sub':" + __name__ + '.g(1, 2)'
-    assert g.get_key((3, ), {})      == "'key','sub':" + __name__ + '.g(3, 2)'
-    assert g.get_key((3, ), {'a':2}) == "'key','sub':" + __name__ + '.g(2, 3)'
+    assert g.key((), {})         == "'key','sub':" + __name__ + '.g(1, 2)'
+    assert g.key((3, ), {})      == "'key','sub':" + __name__ + '.g(3, 2)'
+    assert g.key((3, ), {'a':2}) == "'key','sub':" + __name__ + '.g(2, 3)'
 
 
 def test_namespace():
@@ -194,6 +194,31 @@ def test_etag():
     assert cache.get('key', func) == 3
 
 
+def test_etagger():
+    
+    store = {}
+    cache = Cache(store)
+    state = []
+    
+    def etagger():
+        return len(state)
+    
+    @cache(etagger=etagger)
+    def state_sum():
+        state_sum.count += 1
+        return sum(state, 0)
+    state_sum.count = 0
+    
+    assert state_sum() == 0
+    assert state_sum() == 0
+    assert state_sum.count == 1
+    
+    state.extend((1, 2, 3))
+    
+    assert state_sum() == 6
+    assert state_sum.count == 2
+    
+    
 def test_dynamic_maxage():
     
     store = {}

@@ -1,6 +1,6 @@
 
 import time
-from autocache import Cache
+from autocache.core import *
 
 def test_basic():
     
@@ -81,17 +81,18 @@ def test_region_parents():
     
     cache.get('key', str)
     assert 'master:key' in store
-    assert store['master:key'] == ('', None)
+    assert store['master:key'][EXPIRY_INDEX] == None
     
     cache.get('key', str, region='a')
-    assert store['a:key'] == ('', 1)
+    print store['a:key']
+    assert store['a:key'][EXPIRY_INDEX] == 1
     
     cache.get('key', str, region='b')
-    assert store['b:key'] == ('', 1)
+    assert store['b:key'][EXPIRY_INDEX] == 1
     
     cache.get('key', str, region='b', namespace=None)
     print store
-    assert store['key'] == ('', 1)
+    assert store['key'][EXPIRY_INDEX]== 1
     
 
 

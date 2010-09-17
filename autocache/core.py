@@ -4,6 +4,8 @@ import inspect
 
 
 DEFAULT_TIMEOUT = 10
+CURRENT_PROTOCOL_VERSION = '1'
+PROTOCOL_INDEX, CREATION_INDEX, EXPIRY_INDEX, ETAG_INDEX, VALUE_INDEX = range(5)
 
 
 class Cache(object):
@@ -38,6 +40,39 @@ class Cache(object):
         
         store = opts['store']
         return key, store
+    
+    
+    def _has_expired(self, data, opts):
+        
+        protocol, creation, old_expiry, old_etag, value = data
+        assert protocol == CURRENT_PROTOCOL_VERSION, 'wrong protocol version: %r' % protocol
+            
+        current_time = time.time()
+        
+        # This one is obvious...
+        if old_expiry and old_expiry < current_time:
+            return True
+            
+        # It is expired if an etag has been set and provided, but they don't
+        # match.
+        etag = opts.get('etag')
+        if etag is not None and old_etag is not None and etag != old_etag:
+            return True
+        
+        # The new expiry time is too old. This seems odd to do... Oh well.
+        expiry = opts.get('expiry')
+        if expiry and expiry < current_time:
+            return True
+         
+        # See if the creation time is too long ago for a given maxage.
+        maxage = opts.get('maxage')
+        if maxage is not None and (creation + maxage) < current_time:
+            return True
+        
+        
+        
+        
+        
         
     def get(self, key, func=None, args=(), kwargs={}, **opts):
         """Manually retrieve a value from the cache, calculating as needed.
@@ -67,11 +102,10 @@ class Cache(object):
         if not isinstance(key, str):
             raise TypeError('non-string key of type %s' % type(key))
         
-        pair = store.get(key)
-        if pair is not None:
-            value, expiry = pair
-            if expiry is None or expiry > time.time():
-                return value
+        data = store.get(key)
+        if data is not None:
+            if not self._has_expired(data, opts):
+                return data[VALUE_INDEX]
             try:
                 del store[key]
             except KeyError:
@@ -91,12 +125,15 @@ class Cache(object):
             if locked:
                 lock.release()
         
+        creation = time.time()
         expiry = opts.get('expiry')
         maxage = opts.get('maxage')
         if maxage is not None:
-            expiry = (expiry or time.time()) + maxage
+            expiry = min(x for x in (expiry, creation + maxage) if x is not None)
         
-        store[key] = (value, expiry)
+        # Need to be careful as this is the only place where we do not use the
+        # lovely index constants.
+        store[key] = (CURRENT_PROTOCOL_VERSION, creation, expiry, opts.get('etag'), value)
         
         return value
     
@@ -111,9 +148,11 @@ class Cache(object):
     def expire_at(self, key, expiry, **opts):
         """Set the explicit unix expiry time of a key."""
         key, store = self._expand_opts(key, opts)
-        pair = store.get(key)
-        if pair is not None:
-            store[key] = (pair[0], expiry)
+        data = store.get(key)
+        if data is not None:
+            data = list(data)
+            data[EXPIRY_INDEX] = expiry
+            store[key] = tuple(data)
         else:
             raise KeyError(key)
     
@@ -126,19 +165,20 @@ class Cache(object):
         key, store = self._expand_opts(key, opts)
         if hasattr(store, 'ttl'):
             return store.ttl(key)
-        pair = store.get(key)
-        if pair is None:
+        data = store.get(key)
+        if data is None:
             return None
-        value, expiry = pair
+        expiry = data[EXPIRY_INDEX]
         if expiry is not None:
             return max(0, expiry - time.time()) or None
     
     def exists(self, key, **opts):
         """Return if a key exists in the cache."""
         key, store = self._expand_opts(key, opts)
-        if key not in store:
+        data = store.get(key)
+        if data is None:
             return False
-        if store[key][1] < time.time():
+        if self._has_expired(data, opts):
             try:
                 del store[key]
             except KeyError:

@@ -11,4 +11,4 @@
 	cache.get('key', func, maxage=60) # This will recalculate
 
 - The data tuple will be:
-	(value, creation, expiry, etag)
+	(creation, expiry, etag, value)

@@ -293,6 +293,10 @@ The valued stored are ALWAYS 2-tuples: the first item is the actual value to be 
 
 Return the requested data tuple. MUST raise a KeyError, or return None of the key does not exist.
 
+### `Store.get(key)`
+
+Return the requested data tuple. MUST return None if the key does not exist.
+
 ### `Store.__setitem__(key, data_tuple)`
 
 Store the data tuple. This may optionally set an expiry time with the store's native method. If the native method does not support float times, then round up to the next usable time so that the store does not expire a value before we

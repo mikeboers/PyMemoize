@@ -289,26 +289,26 @@ Keys are ALWAYS strings.
 
 The valued stored are ALWAYS 2-tuples: the first item is the actual value to be cached, and the second is either None, or a float of the unix time at which the value will expire.
 
-### Store.__getitem__(key)
+### `Store.__getitem__(key)`
 
 Return the requested data tuple. MUST raise a KeyError, or return None of the key does not exist.
 
-### Store.__setitem__(key, data_tuple)
+### `Store.__setitem__(key, data_tuple)`
 
 Store the data tuple. This may optionally set an expiry time with the store's native method. If the native method does not support float times, then round up to the next usable time so that the store does not expire a value before we
 intend it to.
 
 ie. If using a store that has second resolution, set the expiry time to: `math.ceil(expiry)`.
 
-### Store.__delitem__(key)
+### `Store.__delitem__(key)`
 
 Delete the data tuple. MAY throw an KeyError.
 
-### Store.lock(key) *optional*
+### `Store.lock(key)` *optional*
 
 Return a lock object as specified by the locking section below.
 
-### Store.ttl(key) *optional*
+### `Store.ttl(key)` *optional*
 
 Return the time-to-live of the given key as a float, or None if it does not exist or will not expire. If the native expiry mechanism does not support float times then take care that the returned value is less than the "real" expiry time.
 

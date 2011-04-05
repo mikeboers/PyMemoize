@@ -8,7 +8,7 @@ CURRENT_PROTOCOL_VERSION = '1'
 PROTOCOL_INDEX, CREATION_INDEX, EXPIRY_INDEX, ETAG_INDEX, VALUE_INDEX = range(5)
 
 
-class Cache(object):
+class Memoizer(object):
     """Cache and memoizer."""
     
     def __init__(self, store, **kwargs):
@@ -199,10 +199,12 @@ class Cache(object):
             return lambda func: self(func, *args, **opts)
         
         master_key = ','.join(map(repr, args)) if args else None
-        return CachedFunction(self, func, master_key, opts)
+        return MemoizedFunction(self, func, master_key, opts)
 
 
-class CachedFunction(object):
+
+
+class MemoizedFunction(object):
     
     def __init__(self, cache, func, master_key, opts):
         self.cache = cache
@@ -278,10 +280,6 @@ class CachedFunction(object):
     def etag(self, args=(), kwargs={}, **opts):
         self._expand_opts(opts)
         return self.cache.etag(self.key(args, kwargs))
-
-
-
-
 
 
 

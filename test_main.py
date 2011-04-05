@@ -2,6 +2,9 @@
 import time
 from autocache.core import *
 
+# Because I'm lazy.
+Cache = Memoizer
+
 def test_basic():
     
     store = {}

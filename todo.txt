@@ -1,7 +1,3 @@
-- Name this.
-
-	- AutoCache (not taken)
-	- MemoStore
 
 - Note that store implementors should use the INDEX constants.
 

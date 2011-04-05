@@ -1,7 +1,7 @@
-AutoCache
+Memoize
 =================
 
-This is a (relatively) simple Python cache and memoizing module (ie. a function cache), in which any dict-like can be used as the actual storage object.
+This is a (relatively) simple Python memoizing module (ie. a function cache), in which any dict-like can be used as the actual storage object.
 
 Basics
 ------
@@ -11,11 +11,11 @@ Lets walk through a simple example. First we need somewhere to cache values. We 
     # Make a store.
     store = {}
 
-Now we create the cache object itself. Any keyword arguments will be stored as
-options to the "default" region (more on this later).
+Now we create the `Memoizer` object itself. Any keyword arguments will be stored as options to the "default" region (more on this later).
 
 	# Initialize the cache object.
-	cache = Cache(store)
+    from memoize import Memoizer
+	memo = Memoizer(store)
 
 There is a direct API for retrieving a value. We pass it the key we want, and a function that is used to calculate it.
     
@@ -24,24 +24,24 @@ There is a direct API for retrieving a value. We pass it the key we want, and a 
         return 123
     
 	# Manually retrieve a value.
-	cache.get('basic', basic_func)
+	memo.get('basic', basic_func)
 	# stdout > called
 	# return > 123
 	
 	# If we ask for the same key it will not run the function again.
-	cache.get('basic', basic_func)
+	memo.get('basic', basic_func)
 	# return > 123
 	
 You can check for a given key, and manually remove something from the cache if you want:
     
-    cache.exists('basic')
+    memo.exists('basic')
     # return > True
     
-    cache.delete('basic')
-    cache.exists('basic')
+    memo.delete('basic')
+    memo.exists('basic')
     # return > False
     
-    cache.get('basic', basic_func)
+    memo.get('basic', basic_func)
     # stdout > called
     # return > 123
 
@@ -56,15 +56,15 @@ You can specify the positional and keyword arguments to call the function with:
         return a + b
     
     # Passing args...
-    cache.get('adder-1', adder_func, (1, 2))
+    memo.get('adder-1', adder_func, (1, 2))
     # stdout > called
     # return > 3
     
-    cache.get('adder-1', adder_func, (1, 2))
+    memo.get('adder-1', adder_func, (1, 2))
     # return > 3
     
     # And kwargs...
-    cache.get('adder-2', adder_func, (), {'a':3, 'b':4})
+    memo.get('adder-2', adder_func, (), {'a':3, 'b':4})
     # stdout > called
     # return > 7
 
@@ -73,11 +73,11 @@ Expiring values
 
 Values need not live forever; we can easily supply maximum ages or expiry times for the data.
 
-    cache.get('expires', basic_func, maxage=1)
+    memo.get('expires', basic_func, maxage=1)
     # stdout > called
     # return > 123
     
-    cache.get('expires', basic_func, maxage=1)
+    memo.get('expires', basic_func, maxage=1)
     # return > 123
     
     # Let us wait for this to expire...
@@ -85,7 +85,7 @@ Values need not live forever; we can easily supply maximum ages or expiry times 
     time.sleep(1.1)
     
     # The function will get called again!
-    cache.get('expires', basic_func, maxage=1)
+    memo.get('expires', basic_func, maxage=1)
     # stdout > called
     # return > 123
 
@@ -93,26 +93,26 @@ Alternatively you can pass a `expire` which is the explicit unix time for the da
 
 You can see how much time is left until something expires, or set an expiration manually:
 
-    cache.get('expires', basic_func, maxage=60)
+    memo.get('expires', basic_func, maxage=60)
     # stdout > called
     # return > 123
     
-    cache.ttl('expires')
+    memo.ttl('expires')
     # return > something slightly less than 60
     
     # Wait a bit and see what happens...
     time.sleep(1)
-    cache.ttl('expires')
+    memo.ttl('expires')
     # return > something slightly less than 59
     
     # Manually set the remaining ttl of the data.
-    cache.expire('expires', 10)
-    cache.ttl('expires')
+    memo.expire('expires', 10)
+    memo.ttl('expires')
     # return > something slightly less than 10
     
     # Set an explicit expiry time.
-    cache.expire_at('expires', time.time() + 3600)
-    cache.ttl('expires')
+    memo.expire_at('expires', time.time() + 3600)
+    memo.ttl('expires')
     # return > something slightly less than 3600
 
 Etags
@@ -123,16 +123,16 @@ If you need to regenerate your content based off an external resource that is no
 An etag is any object that represents the current state of the resources that will be drawn upon to generate the final value. If the etag changes then it is assumed that the value is out of date. Note that not providing an etag will not trigger a regeneration.
 
     store = {}
-    cache = Cache(store)
+    memo = Memoizer(store)
     
-    cache.get('etagged', basic_func, etag='a')
+    memo.get('etagged', basic_func, etag='a')
     # stdout > called
     
     # Doesnt call the function again if the etag is the same.
-    cache.get('etagged', basic_func, etag='a')
+    memo.get('etagged', basic_func, etag='a')
     
     # Change the etag.
-    cache.get('etagged', basic_func, etag='b')
+    memo.get('etagged', basic_func, etag='b')
     # stdout > called
 
 You can also supply a function that is called with the same arguments that the function will be called with, and its return value is used as the etag.
@@ -141,13 +141,13 @@ You can also supply a function that is called with the same arguments that the f
     def get_etag():
         return len(state)
     
-    cache.get('etagged', basic_func, etagger=get_etag)
+    memo.get('etagged', basic_func, etagger=get_etag)
     
 
 Decoration
 ----------
 
-The cache object can be applied as a decorator to a function, which will automatically cache its return values keyed on the function name, and arguments provided. This is only reliable as long as the `repr` of the arguments is deterministic (ie. no dicts which can change order).
+The `Memoizer` object can be applied as a decorator to a function, which will automatically cache its return values keyed on the function name, and arguments provided. This is only reliable as long as the `repr` of the arguments is deterministic (ie. no dicts which can change order).
 
 The inclusion of arguments into the key is the primary difference between the direct get method, and using the decorator; functions have effectively been memoized!
 
@@ -157,7 +157,7 @@ You can manually specify a key as a positional argument if there will be a name 
 
 Basic usage:
 
-    @cache
+    @memo
     def cached_func():
         print 'called'
         return 456
@@ -172,14 +172,14 @@ Basic usage:
 Using options:
 
     # This should be obvious as to what it does...
-    @cache(maxage=60)
+    @memo(maxage=60)
     def one_minute():
         return 'value'
     
     one_minute()
     # return > 'value'
 
-Many of the Cache methods have been applied to the wrapped function as well!
+Many of the Memoizer methods have been applied to the wrapped function as well!
 
     one_minute.exists()
     # return > True
@@ -197,7 +197,7 @@ Many of the Cache methods have been applied to the wrapped function as well!
 
 Since the cache for the function is keyed by the arguments, you must provide all of the positional and keyword arguments that you are checking against to these methods.
 
-    @cache
+    @memo
     def adder(a, b):
         return a + b
     
@@ -225,19 +225,19 @@ Namespaces
 A namespace a simply a string prefix for the final key. The prefixed key is only ever seen by the store itself.
 
     store = {}
-    cache = Cache(store, namespace='master')
+    memo = Memoizer(store, namespace='master')
     
-    cache.get('key', str)
+    memo.get('key', str)
     store.keys()
     # return > ['master:key']
     
     store.clear()
-    cache.get('key2', str, namespace='2')
+    memo.get('key2', str, namespace='2')
     store.keys()
     # return > ['2:key2']
     
     store.clear()
-    @cache(namespace='3')
+    @memo(namespace='3')
     def func():
         pass
     func()
@@ -250,22 +250,22 @@ Regions
 
 Regions are sets of default values. A region named "default" is initially created and populated with keyword arguments passed to the constructor.
 
-A region is simply a dictionary within the Cache.regions dictionary (mapped by name). It is referenced by name as an kwarg in all methods.
+A region is simply a dictionary within the Memoizer.regions dictionary (mapped by name). It is referenced by name as an kwarg in all methods.
     
     store = {}
-    cache = Cache(store)
-    cache.regions['short'] = {'maxage': 60}
-    cache.regions['long'] = {'maxage': 3600}
+    memo = Memoizer(store)
+    memo.regions['short'] = {'maxage': 60}
+    memo.regions['long'] = {'maxage': 3600}
 
-    cache.get('key1', str)
-    cache.get('key2', str, region='short')
-    cache.get('key3', str, region='long')
+    memo.get('key1', str)
+    memo.get('key2', str, region='short')
+    memo.get('key3', str, region='long')
 
-    cache.ttl('key1')
+    memo.ttl('key1')
     # return > None
-    cache.ttl('key2')
+    memo.ttl('key2')
     # return > ~60
-    cache.ttl('key3')
+    memo.ttl('key3')
     # return > ~3600
     
 A simple form a region inheritance may exist by a region naming another region as its "parent" (again, by name). Please see the tests for a demonstration.
@@ -278,12 +278,12 @@ You can specify the store to use on a global, region, or individual bases.
     primary = {}
     secondary = {}
     tertiary = {}
-    cache = Cache(default)
-    cache.regions['secondary'] = {'store': secondary}
+    memo = Memoizer(default)
+    memo.regions['secondary'] = {'store': secondary}
     
-    cache.get('key1', str)
-    cache.get('key2', str, region='secondary')
-    cache.get('key3', str, store=tertiary)
+    memo.get('key1', str)
+    memo.get('key2', str, region='secondary')
+    memo.get('key3', str, store=tertiary)
 
     primary.keys()
     # return > 'key1'
@@ -315,10 +315,10 @@ We have provided a small wrapper and lock implementation for use with Redis.
     from redis import Redis
     db = Redis()
     
-    import autocache.redis
-    store = autocache.redis.wrap(db)
+    import memoize.redis
+    store = memoize.redis.wrap(db)
     
-    cache = autocache.Cache(store)
+    memo = memoize.Memoizer(store)
     
     # Use!
 
@@ -342,7 +342,7 @@ The valued stored are ALWAYS tuples. The first item is in integer representing t
     3: etag
     4: value
 
-There are constants in `autocache.core` that hold the index values so you will
+There are constants in `memoize.core` that hold the index values so you will
 not have to hardcode these (ie. `CREATION_INDEX`, and `ETAG_INDEX`).
 
 ### Method: `Store.__getitem__(key)`

@@ -2,14 +2,25 @@
 from distutils.core import setup
 
 setup(
-    name='AutoCache',
-    version='0.1a',
-    description='Simple cache and memoizing module.',
-    url='http://github.com/mikeboers/AutoCache',
+    name='PyMemoize',
+    version='0.1',
+    description='Simple memoizing module.',
+    url='http://github.com/mikeboers/PyMemoize',
     
-    packages=['autocache'],
+    packages=['memoize'],
     
     author='Mike Boers',
-    author_email='autcache@mikeboers.com',
-    license='New BSD License',
+    author_email='memoize@mikeboers.com',
+    license='BSD-3',
+    
+    classifiers=[
+        'Development Status :: 5 - Production/Stable',
+        'Intended Audience :: Developers',
+        'License :: OSI Approved :: BSD License',
+        'Natural Language :: English',
+        'Operating System :: OS Independent',
+        'Programming Language :: Python :: 2',
+        'Topic :: Software Development :: Libraries :: Python Modules',
+    ],
+    
 )

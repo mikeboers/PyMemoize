@@ -1,7 +1,8 @@
+- rename maxage to max_age
+- change tuple to a named tuple and remove the INDEX constants
+    - the protocol version could be a class attribute as long as it is
+      retained when serialized
+- what happens when we decorate a method?
+    - do we want `self` to be an argument?
 
-- Note that store implementors should use the INDEX constants.
 
-- etagger is a function which takes the same args and the real function, and
-  returns an etag.
-
-- Consider renaming maxage to max_age everywhere.

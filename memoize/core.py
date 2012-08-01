@@ -5,7 +5,7 @@ import inspect
 
 DEFAULT_TIMEOUT = 10
 CURRENT_PROTOCOL_VERSION = '1'
-PROTOCOL_INDEX, CREATION_INDEX, EXPIRY_INDEX, ETAG_INDEX, VALUE_INDEX = range(5)
+PROTOCOL_INDEX, CREATION_INDEX, EXPIRY_INDEX, ETAG_INDEX, VALUE_INDEX = list(range(5))
 
 
 class Memoizer(object):
@@ -31,7 +31,7 @@ class Memoizer(object):
                 region = self.regions[region].get('parent', 'default')
             
             # Apply the region settings to the options.
-            for k, v in self.regions[region].iteritems():
+            for k, v in self.regions[region].items():
                 opts.setdefault(k, v)
         
         namespace = opts.get('namespace')
@@ -216,7 +216,7 @@ class MemoizedFunction(object):
         return '<%s of %s via %s>' % (self.__class__.__name__, self.func, self.cache)
     
     def _expand_opts(self, opts):
-        for k, v in self.opts.iteritems():
+        for k, v in self.opts.items():
             opts.setdefault(k, v)
     
     def key(self, args=(), kwargs={}):
@@ -242,8 +242,8 @@ class MemoizedFunction(object):
             offset = len(spec.args) - len(spec.defaults)
             args.extend(spec.defaults[len(args) - offset:])
         
-        arg_str_chunks = map(repr, args)
-        for pair in kwargs.iteritems():
+        arg_str_chunks = list(map(repr, args))
+        for pair in kwargs.items():
             arg_str_chunks.append('%s=%r' % pair)
         arg_str = ', '.join(arg_str_chunks)
         

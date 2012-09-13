@@ -1,6 +1,8 @@
 Memoize
 =================
 
+[![Test Status](https://secure.travis-ci.org/mikeboers/pymemoize.png)](http://travis-ci.org/mikeboers/pymemoize)
+
 This is a (relatively) simple Python memoizing module (ie. a function cache), in which any dict-like can be used as the actual storage object.
 
 Basics

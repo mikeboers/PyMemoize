@@ -222,12 +222,12 @@ class MemoizedFunction(object):
     def key(self, args=(), kwargs={}):
         # We need to normalize the signature of the function. This is only
         # really possible if we wrap the "real" function.
-        spec = inspect.getargspec(self.func)
+        spec_args, _, _, spec_defaults = inspect.getargspec(self.func)
         
         # Insert kwargs into the args list by name.
         orig_args = list(args)
         args = []
-        for i, name in enumerate(spec.args):
+        for i, name in enumerate(spec_args):
             if name in kwargs:
                 args.append(kwargs.pop(name))
             elif orig_args:
@@ -238,9 +238,9 @@ class MemoizedFunction(object):
         args.extend(orig_args)
         
         # Add on as many defaults as we need to.
-        if spec.defaults:
-            offset = len(spec.args) - len(spec.defaults)
-            args.extend(spec.defaults[len(args) - offset:])
+        if spec_defaults:
+            offset = len(spec_args) - len(spec_defaults)
+            args.extend(spec_defaults[len(args) - offset:])
         
         arg_str_chunks = list(map(repr, args))
         for pair in kwargs.items():

@@ -67,9 +67,9 @@ def test_region():
     assert func2() == 2
     assert len(store_b) == 1
     
-    print 'default', memo.regions['default']['store']
-    print 'a', store_a
-    print 'b', store_b
+    # print 'default', memo.regions['default']['store']
+    # print 'a', store_a
+    # print 'b', store_b
 
 
 def test_region_parents():
@@ -84,14 +84,14 @@ def test_region_parents():
     assert store['master:key'][EXPIRY_INDEX] == None
     
     memo.get('key', str, region='a')
-    print store['a:key']
+    # print store['a:key']
     assert store['a:key'][EXPIRY_INDEX] == 1
     
     memo.get('key', str, region='b')
     assert store['b:key'][EXPIRY_INDEX] == 1
     
     memo.get('key', str, region='b', namespace=None)
-    print store
+    # print store
     assert store['key'][EXPIRY_INDEX]== 1
     
 

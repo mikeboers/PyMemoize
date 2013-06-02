@@ -15,7 +15,6 @@ class Memoizer(object):
         self.regions = dict(default=kwargs)
 
     def _expand_opts(self, key, opts):
-
         region = None
         while region != 'default':
 
@@ -41,7 +40,6 @@ class Memoizer(object):
         return key, store
 
     def _has_expired(self, data, opts):
-
         protocol, creation, old_expiry, old_etag, value = data
         assert protocol == CURRENT_PROTOCOL_VERSION, 'wrong protocol version: %r' % protocol
 
@@ -89,7 +87,6 @@ class Memoizer(object):
                 provide expiry OR max_age, not both.
 
         """
-
         kwargs = kwargs or {}
         key, store = self._expand_opts(key, opts)
 
@@ -183,7 +180,6 @@ class Memoizer(object):
 
     def __call__(self, *args, **opts):
         """A decorator to wrap around a function."""
-
         if args and hasattr(args[0], '__call__'):
             func = args[0]
             args = args[1:]

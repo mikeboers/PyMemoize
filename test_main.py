@@ -17,12 +17,12 @@ def test_basic():
     assert memo.get('key', func) == 1
     
     # Keys should expire.
-    assert memo.get('expires', func, maxage=0.05) == 2
-    assert memo.get('expires', func, maxage=0.05) == 2
+    assert memo.get('expires', func, max_age=0.05) == 2
+    assert memo.get('expires', func, max_age=0.05) == 2
     assert memo.exists('expires')
     time.sleep(0.06)
     assert not memo.exists('expires')
-    assert memo.get('expires', func, maxage=0.05) == 3
+    assert memo.get('expires', func, max_age=0.05) == 3
 
 def test_decorator():
     
@@ -229,16 +229,16 @@ def test_dynamic_maxage():
         return func.count
     func.count = 0
     
-    assert memo.get('key', func, maxage=10) == 1
-    assert memo.get('key', func, maxage=10) == 1
+    assert memo.get('key', func, max_age=10) == 1
+    assert memo.get('key', func, max_age=10) == 1
     
     # This will not recalculate as 1 second has not passed.
-    assert memo.get('key', func, maxage=1) == 1
+    assert memo.get('key', func, max_age=1) == 1
     
     time.sleep(0.01)
     
     # This should recalculate.
-    assert memo.get('key', func, maxage=0.005) == 2
+    assert memo.get('key', func, max_age=0.005) == 2
     
     
     

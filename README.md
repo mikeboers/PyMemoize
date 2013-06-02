@@ -20,29 +20,29 @@ Now we create the `Memoizer` object itself. Any keyword arguments will be stored
 	memo = Memoizer(store)
 
 There is a direct API for retrieving a value. We pass it the key we want, and a function that is used to calculate it.
-    
+
     def basic_func():
         print 'called'
         return 123
-    
+
 	# Manually retrieve a value.
 	memo.get('basic', basic_func)
 	# stdout > called
 	# return > 123
-	
+
 	# If we ask for the same key it will not run the function again.
 	memo.get('basic', basic_func)
 	# return > 123
-	
+
 You can check for a given key, and manually remove something from the cache if you want:
-    
+
     memo.exists('basic')
     # return > True
-    
+
     memo.delete('basic')
     memo.exists('basic')
     # return > False
-    
+
     memo.get('basic', basic_func)
     # stdout > called
     # return > 123
@@ -56,15 +56,15 @@ You can specify the positional and keyword arguments to call the function with:
     def adder_func(a, b):
         print called
         return a + b
-    
+
     # Passing args...
     memo.get('adder-1', adder_func, (1, 2))
     # stdout > called
     # return > 3
-    
+
     memo.get('adder-1', adder_func, (1, 2))
     # return > 3
-    
+
     # And kwargs...
     memo.get('adder-2', adder_func, (), {'a':3, 'b':4})
     # stdout > called
@@ -75,19 +75,19 @@ Expiring values
 
 Values need not live forever; we can easily supply maximum ages or expiry times for the data.
 
-    memo.get('expires', basic_func, maxage=1)
+    memo.get('expires', basic_func, max_age=1)
     # stdout > called
     # return > 123
-    
-    memo.get('expires', basic_func, maxage=1)
+
+    memo.get('expires', basic_func, max_age=1)
     # return > 123
-    
+
     # Let us wait for this to expire...
     import time
     time.sleep(1.1)
-    
+
     # The function will get called again!
-    memo.get('expires', basic_func, maxage=1)
+    memo.get('expires', basic_func, max_age=1)
     # stdout > called
     # return > 123
 
@@ -95,23 +95,23 @@ Alternatively you can pass a `expire` which is the explicit unix time for the da
 
 You can see how much time is left until something expires, or set an expiration manually:
 
-    memo.get('expires', basic_func, maxage=60)
+    memo.get('expires', basic_func, max_age=60)
     # stdout > called
     # return > 123
-    
+
     memo.ttl('expires')
     # return > something slightly less than 60
-    
+
     # Wait a bit and see what happens...
     time.sleep(1)
     memo.ttl('expires')
     # return > something slightly less than 59
-    
+
     # Manually set the remaining ttl of the data.
     memo.expire('expires', 10)
     memo.ttl('expires')
     # return > something slightly less than 10
-    
+
     # Set an explicit expiry time.
     memo.expire_at('expires', time.time() + 3600)
     memo.ttl('expires')
@@ -120,19 +120,19 @@ You can see how much time is left until something expires, or set an expiration 
 Etags
 -----
 
-If you need to regenerate your content based off an external resource that is not reflected by the arguments of the function when called, then you can use etags. 
+If you need to regenerate your content based off an external resource that is not reflected by the arguments of the function when called, then you can use etags.
 
 An etag is any object that represents the current state of the resources that will be drawn upon to generate the final value. If the etag changes then it is assumed that the value is out of date. Note that not providing an etag will not trigger a regeneration.
 
     store = {}
     memo = Memoizer(store)
-    
+
     memo.get('etagged', basic_func, etag='a')
     # stdout > called
-    
+
     # Doesnt call the function again if the etag is the same.
     memo.get('etagged', basic_func, etag='a')
-    
+
     # Change the etag.
     memo.get('etagged', basic_func, etag='b')
     # stdout > called
@@ -142,9 +142,9 @@ You can also supply a function that is called with the same arguments that the f
     state = []
     def get_etag():
         return len(state)
-    
+
     memo.get('etagged', basic_func, etagger=get_etag)
-    
+
 
 Decoration
 ----------
@@ -163,21 +163,21 @@ Basic usage:
     def cached_func():
         print 'called'
         return 456
-    
+
     cached_func()
     # stdout > called
     # return > 456
-    
+
     cached_func()
     # return > 456
 
 Using options:
 
     # This should be obvious as to what it does...
-    @memo(maxage=60)
+    @memo(max_age=60)
     def one_minute():
         return 'value'
-    
+
     one_minute()
     # return > 'value'
 
@@ -185,14 +185,14 @@ Many of the Memoizer methods have been applied to the wrapped function as well!
 
     one_minute.exists()
     # return > True
-    
+
     one_minute.ttl()
     # return > slightly less than 60
-    
+
     one_minute.expire(10)
     one_minute.ttl()
     # return > slightly less than 10
-    
+
     one_minute.delete()
     one_minute.exists()
     # return > False
@@ -202,25 +202,25 @@ Since the cache for the function is keyed by the arguments, you must provide all
     @memo
     def adder(a, b):
         return a + b
-    
+
     adder(1, 2)
     # return > 3
-    
+
     # This will not work as expected!
     adder.exists()
     # return > False
-    
+
     # But this does...
     adder.exists((1, 2))
     # return > True
 
 Care has been taken to key this keeping in mind how the arguments will be accepted by the function. Ergo you can specify positional arguments by a keyword and it will still use the same key.
-    
+
     # Note that this results in the same argument values.
     adder.exists((2, ), {'a': 1})
     # return > True
-    
-    
+
+
 Namespaces
 ----------
 
@@ -228,16 +228,16 @@ A namespace a simply a string prefix for the final key. The prefixed key is only
 
     store = {}
     memo = Memoizer(store, namespace='master')
-    
+
     memo.get('key', str)
     store.keys()
     # return > ['master:key']
-    
+
     store.clear()
     memo.get('key2', str, namespace='2')
     store.keys()
     # return > ['2:key2']
-    
+
     store.clear()
     @memo(namespace='3')
     def func():
@@ -253,11 +253,11 @@ Regions
 Regions are sets of default values. A region named "default" is initially created and populated with keyword arguments passed to the constructor.
 
 A region is simply a dictionary within the Memoizer.regions dictionary (mapped by name). It is referenced by name as an kwarg in all methods.
-    
+
     store = {}
     memo = Memoizer(store)
-    memo.regions['short'] = {'maxage': 60}
-    memo.regions['long'] = {'maxage': 3600}
+    memo.regions['short'] = {'max_age': 60}
+    memo.regions['long'] = {'max_age': 3600}
 
     memo.get('key1', str)
     memo.get('key2', str, region='short')
@@ -269,7 +269,7 @@ A region is simply a dictionary within the Memoizer.regions dictionary (mapped b
     # return > ~60
     memo.ttl('key3')
     # return > ~3600
-    
+
 A simple form a region inheritance may exist by a region naming another region as its "parent" (again, by name). Please see the tests for a demonstration.
 
 Alternative stores
@@ -282,7 +282,7 @@ You can specify the store to use on a global, region, or individual bases.
     tertiary = {}
     memo = Memoizer(default)
     memo.regions['secondary'] = {'store': secondary}
-    
+
     memo.get('key1', str)
     memo.get('key2', str, region='secondary')
     memo.get('key3', str, store=tertiary)
@@ -293,7 +293,7 @@ You can specify the store to use on a global, region, or individual bases.
     # return > 'key2'
     tertiary.keys()
     # return > 'key3'
-    
+
 
 Locking
 -------
@@ -316,12 +316,12 @@ We have provided a small wrapper and lock implementation for use with Redis.
 
     from redis import Redis
     db = Redis()
-    
+
     import memoize.redis
     store = memoize.redis.wrap(db)
-    
+
     memo = memoize.Memoizer(store)
-    
+
     # Use!
 
 

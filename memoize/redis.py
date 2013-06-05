@@ -4,12 +4,12 @@ The lock implementation was mostly lifted from
 http://chris-lamb.co.uk/2010/06/07/distributing-locking-python-and-redis/
 
 """
-
 import time
 import shelve
 
+
 class Lock(object):
-    
+
     def __init__(self, db, key, expires=60):
         """
         Distributed locking using Redis SETNX and GETSET.
@@ -27,7 +27,7 @@ class Lock(object):
                             sleep for a maximum of ``timeout`` seconds before
                             giving up. A value of 0 means we never wait.
         """
-        
+
         self.db = db
         self.key = key
         self.expires = expires
@@ -45,7 +45,7 @@ class Lock(object):
 
             # We found an expired lock and nobody raced us to replacing it
             if current_value and float(current_value) < time.time() and \
-                self.db.getset(self.key, expires) == current_value:
+               self.db.getset(self.key, expires) == current_value:
                     return True
 
             timeout -= delay
@@ -56,12 +56,11 @@ class Lock(object):
 
     def release(self):
         self.db.delete(self.key)
-    
+
+
 def wrap(redis, lock_class=Lock):
     def lock(key):
-        return Lock(redis, key + '.lock')
+        return lock_class(redis, key + '.lock')
     db = shelve.Shelf(redis)
     db.lock = lock
     return db
-
-

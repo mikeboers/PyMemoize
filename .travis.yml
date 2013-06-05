@@ -1,7 +1,16 @@
 language: python
 python:
-    - "2.5"
     - "2.6"
     - "2.7"
+    - "pypy"
     - "3.2"
-script: nosetests
+    - "3.3"
+install:
+  - pip install . --use-mirrors
+  - pip install -r test_requirements.txt --use-mirrors
+
+script: 
+  - nosetests --with-cover --cover-branches --cover-package=memoize
+
+after_success:
+  - coveralls

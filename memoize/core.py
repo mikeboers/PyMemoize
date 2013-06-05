@@ -1,3 +1,4 @@
+from functools import partial
 import time
 import inspect
 
@@ -188,23 +189,97 @@ class Memoizer(object):
             return lambda func: self(func, *args, **opts)
 
         master_key = ','.join(map(repr, args)) if args else None
-        return MemoizedFunction(self, func, master_key, opts)
+        return MemoizeDescriptor(self, func, master_key, opts)
 
 
-class MemoizedFunction(object):
+class BoundWrapper(object):
 
-    def __init__(self, cache, func, master_key, opts):
+    def __init__(self, cache, func, args, kwargs, args_key, opts, instance_name):
         self.cache = cache
         self.func = func
-        self.master_key = master_key
+        self.args = args
+        self.kwargs = kwargs
+        self.args_key = args_key
         self.opts = opts
 
     def __repr__(self):
-        return '<%s of %s via %s>' % (self.__class__.__name__, self.func, self.cache)
+        return '<%s of %s via %s>' % (self.__class__.__name__, self.args_key, self.cache)
 
     def _expand_opts(self, opts):
         for k, v in self.opts.items():
             opts.setdefault(k, v)
+
+    def __call__(self, **opts):
+        self._expand_opts(opts)
+        return self.cache.get(self.args_key, self.func, self.args, self.kwargs, **opts)
+
+    def get(self, **opts):
+        self._expand_opts(opts)
+        return self.cache.get(self.args_key,  self.func, self.args, self.kwargs, **opts)
+
+    def delete(self, **opts):
+        self._expand_opts(opts)
+        self.cache.delete(self.args_key, **opts)
+
+    def expire(self, max_age, **opts):
+        self._expand_opts(opts)
+        self.cache.expire(self.args_key, max_age, **opts)
+
+    def expire_at(self, expiry, **opts):
+        self._expand_opts(opts)
+        self.cache.expire_at(self.args_key, expiry, **opts)
+
+    def ttl(self, **opts):
+        self._expand_opts(opts)
+        return self.cache.ttl(self.args_key, **opts)
+
+    def exists(self, **opts):
+        self._expand_opts(opts)
+        return self.cache.exists(self.args_key, **opts)
+
+    def etag(self, **opts):
+        self._expand_opts(opts)
+        return self.cache.etag(self.args_key, **opts)
+
+
+class MemoizeDescriptor(object):
+
+    def __init__(self, cache, func, master_key, opts, instance=None):
+        self.cache = cache
+        self.func = func
+        self.master_key = master_key
+        self.opts = opts
+        self.instance = instance
+        self.instance_name = None
+        self.method = None
+        if self.instance:
+            self.method = partial(self.func, self.instance)
+            if 'id_field' in opts and getattr(self.instance, opts['id_field'], None) is not None:
+                instance_id = getattr(self.instance, opts['id_field'])
+            else:
+                instance_id = id(self.instance)
+            self.instance_name = '%s<%s>' % (self.instance.__class__.__name__,
+                                             instance_id)
+
+    def __repr__(self):
+
+        if self.instance:
+            func_name = '%s.%s' % (self.instance_name, self.func.__name__)
+        else:
+            func_name = self.func.__name__
+
+        return '<%s of %s via %s>' % (self.__class__.__name__, func_name, self.cache)
+
+    def __get__(self, obj, owner=None):
+        assert obj
+        if obj != self.instance:
+            return MemoizeDescriptor(self.cache, self.func, self.master_key, self.opts, obj)
+        else:
+            return self
+
+    def bind(self, *args, **kwargs):
+        return BoundWrapper(self.cache, self.method or self.func,
+                            args, kwargs, self.key(args, kwargs), self.opts, self.instance_name)
 
     def key(self, args=(), kwargs=None):
         # We need to normalize the signature of the function. This is only
@@ -235,36 +310,44 @@ class MemoizedFunction(object):
             arg_str_chunks.append('%s=%r' % pair)
         arg_str = ', '.join(arg_str_chunks)
 
-        key = '%s.%s(%s)' % (self.func.__module__, self.func.__name__, arg_str)
+        function_path = '.'.join(map(str,
+                                     filter(None, (self.func.__module__,
+                                                   self.instance_name or None,
+                                                   self.func.__name__))))
+        key = '%s(%s)' % (function_path, arg_str)
         return self.master_key + ':' + key if self.master_key else key
 
+    def _expand_opts(self, opts):
+        for k, v in self.opts.items():
+            opts.setdefault(k, v)
+
     def __call__(self, *args, **kwargs):
-        return self.cache.get(self.key(args, kwargs), self.func, args, kwargs, **self.opts)
+        return self.cache.get(self.key(args, kwargs), self.method or self.func, args, kwargs, **self.opts)
 
     def get(self, args=(), kwargs=None, **opts):
         self._expand_opts(opts)
-        return self.cache.get(self.key(args, kwargs), self.func, args, kwargs, **opts)
+        return self.cache.get(self.key(args, kwargs), self.method or self.func, args, kwargs, **opts)
 
     def delete(self, args=(), kwargs=None, **opts):
         self._expand_opts(opts)
-        self.cache.delete(self.key(args, kwargs))
+        self.cache.delete(self.key(args, kwargs), **opts)
 
     def expire(self, max_age, args=(), kwargs=None, **opts):
         self._expand_opts(opts)
-        self.cache.expire(self.key(args, kwargs), max_age)
+        self.cache.expire(self.key(args, kwargs), max_age, **opts)
 
-    def expire_at(self, max_age, args=(), kwargs=None, **opts):
+    def expire_at(self, expiry, args=(), kwargs=None, **opts):
         self._expand_opts(opts)
-        self.cache.expire_at(self.key(args, kwargs), max_age)
+        self.cache.expire_at(self.key(args, kwargs), expiry, **opts)
 
     def ttl(self, args=(), kwargs=None, **opts):
         self._expand_opts(opts)
-        return self.cache.ttl(self.key(args, kwargs))
+        return self.cache.ttl(self.key(args, kwargs), **opts)
 
     def exists(self, args=(), kwargs=None, **opts):
         self._expand_opts(opts)
-        return self.cache.exists(self.key(args, kwargs))
+        return self.cache.exists(self.key(args, kwargs), **opts)
 
     def etag(self, args=(), kwargs=None, **opts):
         self._expand_opts(opts)
-        return self.cache.etag(self.key(args, kwargs))
+        return self.cache.etag(self.key(args, kwargs), **opts)

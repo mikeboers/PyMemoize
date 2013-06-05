@@ -1,4 +1,6 @@
+from pprint import pprint
 import time
+from nose.tools import eq_, ok_
 from memoize.core import *
 
 
@@ -40,6 +42,8 @@ def test_decorator():
     assert len(record) == 1
     assert func_1(2) == 2
     assert len(record) == 2
+    assert not func_1.exists(args=(3,))
+
 
 
 def test_region():
@@ -238,3 +242,53 @@ def test_dynamic_maxage():
 
     # This should recalculate.
     assert memo.get('key', func, max_age=0.005) == 2
+
+
+def test_method_decorator():
+    store = {}
+    memo = Memoizer(store)
+
+    class Test(object):
+        def __init__(self, obj_id=None):
+            self.record = []
+            if obj_id:
+                self.obj_id = obj_id
+
+        @memo(id_field='obj_id')
+        def func(self, arg):
+            self.record.append(arg)
+            return self.record
+
+    t1 = Test(1)
+    eq_(t1.func(1), [1])
+    eq_(t1.func(1), [1])
+    eq_(t1.func(2), [1, 2])
+    eq_(t1.func(1), [1, 2])
+    bound_method = t1.func.bind(1)
+    ok_(bound_method.exists())
+    ok_(not bound_method.exists(namespace='test'))
+    eq_(bound_method(), [1, 2])
+
+    t2 = Test(2)
+    eq_(t2.func(1), [1])
+    eq_(t2.func(1), [1])
+    eq_(t2.func(2), [1, 2])
+    eq_(t2.func(1), [1, 2])
+
+    t3 = Test(1)
+    pprint(store)
+    eq_(t3.func(1), [1, 2])
+
+    t4 = Test()
+    eq_(t4.func(1), [1])
+    eq_(t4.func(1), [1])
+    eq_(t4.func(2), [1, 2])
+    eq_(t4.func(1), [1, 2])
+
+    t5 = Test()
+    eq_(t5.func(1), [1])
+    eq_(t5.func(1), [1])
+    eq_(t5.func(2), [1, 2])
+    eq_(t5.func(1), [1, 2])
+
+

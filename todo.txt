@@ -2,7 +2,6 @@
 - Change tuple to a named tuple and remove the INDEX constants.
     - The protocol version could be a class attribute as long as it is
       retained when serialized.
-    - This would require dropping Python2.5
 
 - Consider adding check for `__memokey__` before `repr`ing arguments.
   This would allow for classes to specify their behaviour a little

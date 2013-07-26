@@ -1,8 +1,12 @@
-- rename maxage to max_age
-- change tuple to a named tuple and remove the INDEX constants
-    - the protocol version could be a class attribute as long as it is
-      retained when serialized
-- what happens when we decorate a method?
-    - do we want `self` to be an argument?
+
+- Change tuple to a named tuple and remove the INDEX constants.
+    - The protocol version could be a class attribute as long as it is
+      retained when serialized.
+    - This would require dropping Python2.5
+
+- Consider adding check for `__memokey__` before `repr`ing arguments.
+  This would allow for classes to specify their behaviour a little
+  better.
+
 
 

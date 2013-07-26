@@ -238,3 +238,29 @@ def test_dynamic_maxage():
 
     # This should recalculate.
     assert memo.get('key', func, max_age=0.005) == 2
+
+
+def test_method_decorator():
+
+    store = {}
+    memo = Memoizer(store)
+
+    class A(object):
+
+        def __init__(self):
+            self.records = []
+
+        @memo
+        def append(self, *args, **kwargs):
+            self.records.append((args, kwargs))
+            return len(self.records)
+
+    a = A()
+    b = A()
+    assert not a.append.exists((1, ))
+    assert a.append(1) == 1
+    assert a.append.exists((1, ))
+    assert a.append(1) == 1
+    assert a.append(2) == 2
+    assert b.append(1) == 1
+

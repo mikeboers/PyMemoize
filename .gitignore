@@ -3,3 +3,5 @@
 .tox
 MANIFEST
 .coverage
+
+/venv

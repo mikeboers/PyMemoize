@@ -180,7 +180,7 @@ class Memoizer(object):
 
     def __call__(self, *args, **opts):
         """A decorator to wrap around a function."""
-        if args and hasattr(args[0], '__call__'):
+        if args and (hasattr(args[0], '__call__') or isinstance(args[0], classmethod)):
             func = args[0]
             args = args[1:]
         else:
@@ -201,14 +201,16 @@ class MemoizedFunction(object):
         self.args = args or ()
         self.kwargs = kwargs or {}
 
-    def __get__(self, obj, owner=None):
-        if obj is not None:
+    def __get__(self, obj, klass=None):
+        if obj is not None and hasattr(self.func, '__call__'):
             return self.bind(obj)
+        elif klass is not None or obj is not None:
+            return self.bind(klass or obj.__class__)
         else:
             return self
 
     def __repr__(self):
-        return '<%s of %s via %s>' % (self.__class__.__name__, self.func, self.cache)
+        return '<%s of %s via %s>' % (self.__class__.__name__, self._get_func(self.args), self.cache)
 
     def bind(self, *args, **kwargs):
         args, kwargs = self._expand_args(args, kwargs)
@@ -231,11 +233,23 @@ class MemoizedFunction(object):
         for k, v in self.opts.items():
             opts.setdefault(k, v)
 
+    def _get_func(self, args):
+        if hasattr(self.func, '__call__'):
+            func = self.func
+        else:
+            if inspect.isclass(args[0]):
+                func = self.func.__get__(None, args[0])
+            else:
+                func = self.func.__get__(None, args[0].__class__)
+        return func
+
     def key(self, args=(), kwargs=None):
         # We need to normalize the signature of the function. This is only
         # really possible if we wrap the "real" function.
         kwargs = kwargs or {}
-        spec_args, _, _, spec_defaults = inspect.getargspec(self.func)
+
+        func = self._get_func(args)
+        spec_args, _, _, spec_defaults = inspect.getargspec(func)
 
         # Insert kwargs into the args list by name.
         orig_args = list(args)
@@ -260,17 +274,17 @@ class MemoizedFunction(object):
             arg_str_chunks.append('%s=%r' % pair)
         arg_str = ', '.join(arg_str_chunks)
 
-        key = '%s.%s(%s)' % (self.func.__module__, self.func.__name__, arg_str)
+        key = '%s.%s(%s)' % (func.__module__, func.__name__, arg_str)
         return self.master_key + ':' + key if self.master_key else key
 
     def __call__(self, *args, **kwargs):
         args, kwargs = self._expand_args(args, kwargs)
-        return self.cache.get(self.key(args, kwargs), self.func, args, kwargs, **self.opts)
+        return self.cache.get(self.key(args, kwargs), self._get_func(args), args, kwargs, **self.opts)
 
     def get(self, args=(), kwargs=None, **opts):
         args, kwargs = self._expand_args(args, kwargs)
         self._expand_opts(opts)
-        return self.cache.get(self.key(args, kwargs), self.func, args, kwargs, **opts)
+        return self.cache.get(self.key(args, kwargs), self._get_func(args), args, kwargs, **opts)
 
     def delete(self, args=(), kwargs=None, **opts):
         args, kwargs = self._expand_args(args, kwargs)

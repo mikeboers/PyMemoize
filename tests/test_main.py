@@ -262,5 +262,29 @@ def test_method_decorator():
     assert a.append.exists((1, ))
     assert a.append(1) == 1
     assert a.append(2) == 2
-    assert b.append(1) == 1
+    assert b.append(2) == 1
+
+
+def test_class_method_decorator():
+
+    store = {}
+    memo = Memoizer(store)
+
+    class A(object):
+        records = []
+
+        @memo
+        @classmethod
+        def append(cls, *args, **kwargs):
+            cls.records.append((args, kwargs))
+            return len(cls.records)
+
+    a = A()
+    b = A()
+    assert not a.append.exists((1, ))
+    assert a.append(1) == 1
+    assert a.append.exists((1, ))
+    assert a.append(1) == 1
+    assert a.append(2) == 2
+    assert b.append(2) == 2
 

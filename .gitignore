@@ -5,3 +5,4 @@ MANIFEST
 .coverage
 
 /venv
+PyMemoize.egg-info

@@ -8,3 +8,38 @@
   better.
 
 - Replace Redis lock with pattern from http://redis.io/commands/set
+
+- Should we have a `validator` which runs with knowledge of previous results in
+  order to validate that they are still good?
+
+- Decorators for setting etagger, validator, maxage determinator, etc.:
+
+    @myfunc.set_etagger
+    def myetagger(...): pass
+
+    - Would it be better to overload the names, so that the decorator is
+      @myfunc.etagger instead of @myfunc.set_etagger, or is that more trouble
+      than it is worth?
+
+- Rename `etagger` to `etag` with the following symantics:
+
+    memo.get(key, func, etag='an etag')
+    memo.get(key, func, etag=etag_func)
+
+    @memo
+    def myfunc(...): pass
+
+    @memo.etag
+    def myfunc(...): pass
+
+    myfunc.etag(*a, **kw) -> etag
+
+    - The `etag` attribute on the decorated method will likely need to be
+      a custom descriptor.
+
+- `namespace`, `region`, `max_age`, `expiry` and `etag` symantics are such that
+  when it is callable it is called to determine the value, otherwise it is taken
+  as is. `lock` must always be a lock constructor, and cannot be set to a
+  specific lock.
+
+

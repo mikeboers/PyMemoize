@@ -226,7 +226,6 @@ class TestMain(TestCase):
             ('unlk', 'tests.test_main.f(1, 2, 3)'),
         ])
 
-
     def test_etag(self):
 
         store = {}
@@ -249,8 +248,7 @@ class TestMain(TestCase):
         # It does not go up here.
         assert memo.get('key', func) == 3
 
-
-    def test_etagger(self):
+    def test_dynamic_etag(self):
 
         store = {}
         memo = Memoizer(store)
@@ -259,7 +257,7 @@ class TestMain(TestCase):
         def etagger():
             return len(state)
 
-        @memo(etagger=etagger)
+        @memo(etag=etagger)
         def state_sum():
             state_sum.count += 1
             return sum(state, 0)
@@ -273,7 +271,6 @@ class TestMain(TestCase):
 
         assert state_sum() == 6
         assert state_sum.count == 2
-
 
 
     def test_method_decorator(self):

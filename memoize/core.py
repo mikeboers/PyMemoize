@@ -2,6 +2,7 @@ import sys
 
 from .time import time
 from .func import MemoizedFunction
+from .options import call_or_pass
 
 
 DEFAULT_TIMEOUT = 10
@@ -92,9 +93,8 @@ class Memoizer(object):
         kwargs = kwargs or {}
         key, store = self._expand_opts(key, opts)
 
-        # Create a dynamic etag.
-        if opts.get('etag') is None and opts.get('etagger'):
-            opts['etag'] = opts['etagger'](*args, **kwargs)
+        # Resolve the etag.
+        opts['etag'] = call_or_pass(opts.get('etag') or opts.get('etagger'), args, kwargs)
 
         if not isinstance(key, str):
             raise TypeError('non-string key of type %s' % type(key))
@@ -119,8 +119,8 @@ class Memoizer(object):
                 lock.release()
 
         creation = time()
-        expiry = opts.get('expiry')
-        max_age = opts.get('max_age')
+        expiry = call_or_pass(opts.get('expiry'), args, kwargs)
+        max_age = call_or_pass(opts.get('max_age'), args, kwargs)
         if max_age is not None:
             expiry = min(x for x in (expiry, creation + max_age) if x is not None)
 

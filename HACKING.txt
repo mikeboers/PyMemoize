@@ -1,0 +1,13 @@
+Developing PyMemoize
+====================
+
+
+Time Travel
+-----------
+
+Since we want our test suite to run as fast as possible, there is a concept of time travel in which `sleep` does not actually sleep, but simply offsets what future calls to `time` will return.
+
+To use time travel in tests, import `time` and `sleep` from `memoize.time`.
+
+To disable use of time travel (to make sure that time travel does not invalidate test results), occasionally test after setting `NO_TIME_TRAVEL=1` in your environment:
+

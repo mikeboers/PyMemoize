@@ -35,13 +35,13 @@ class TestMain(TestCase):
         self.assertEqual(memo.get('key', func), 1)
 
         # Keys should expire.
-        self.assertEqual(memo.get('expires', func, max_age=60), 2)
-        self.assertEqual(memo.get('expires', func, max_age=60), 2)
+        self.assertEqual(memo.get('expires', func, max_age=1), 2)
+        self.assertEqual(memo.get('expires', func, max_age=1), 2)
 
         self.assertTrue(memo.exists('expires'))
-        sleep(120)
+        sleep(2)
         self.assertFalse(memo.exists('expires'))
-        self.assertEqual(memo.get('expires', func, max_age=60), 3)
+        self.assertEqual(memo.get('expires', func, max_age=1), 3)
 
     def test_dynamic_maxage(self):
 
@@ -55,16 +55,16 @@ class TestMain(TestCase):
 
         func.count = 0
 
-        self.assertEqual(memo.get('key', func, max_age=60), 1)
-        self.assertEqual(memo.get('key', func, max_age=60), 1)
+        self.assertEqual(memo.get('key', func, max_age=1), 1)
+        self.assertEqual(memo.get('key', func, max_age=1), 1)
 
         # This will not recalculate as 1 second has not passed.
-        self.assertEqual(memo.get('key', func, max_age=60), 1)
+        self.assertEqual(memo.get('key', func, max_age=1), 1)
 
-        sleep(120)
+        sleep(2)
 
         # This should recalculate.
-        self.assertEqual(memo.get('key', func, max_age=60), 2)
+        self.assertEqual(memo.get('key', func, max_age=1), 2)
 
     def test_exceptions(self):
 

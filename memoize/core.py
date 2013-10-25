@@ -1,6 +1,7 @@
 import inspect
 import sys
-from time import time
+
+from .time import time
 
 
 DEFAULT_TIMEOUT = 10

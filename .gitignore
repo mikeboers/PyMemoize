@@ -1,6 +1,8 @@
 *.pyc
 .idea
 .tox
+*.egg-info
+
 MANIFEST
 .coverage
 

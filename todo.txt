@@ -7,5 +7,4 @@
   This would allow for classes to specify their behaviour a little
   better.
 
-
-
+- Replace Redis lock with pattern from http://redis.io/commands/set

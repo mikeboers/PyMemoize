@@ -4,8 +4,10 @@ The lock implementation was mostly lifted from
 http://chris-lamb.co.uk/2010/06/07/distributing-locking-python-and-redis/
 
 """
-import time
+
 import shelve
+
+from .time import time, sleep
 
 
 class Lock(object):
@@ -35,7 +37,7 @@ class Lock(object):
     def acquire(self, timeout):
         delay = 0.1
         while timeout >= 0:
-            expires = time.time() + self.expires + 1
+            expires = time() + self.expires + 1
 
             if self.db.setnx(self.key, expires):
                 # We gained the lock; enter critical section
@@ -44,12 +46,12 @@ class Lock(object):
             current_value = self.db.get(self.key)
 
             # We found an expired lock and nobody raced us to replacing it
-            if current_value and float(current_value) < time.time() and \
+            if current_value and float(current_value) < time() and \
                self.db.getset(self.key, expires) == current_value:
                     return True
 
             timeout -= delay
-            time.sleep(min(timeout, delay))
+            sleep(min(timeout, delay))
             delay *= 2
 
         return False

@@ -31,7 +31,6 @@ def test_decorator():
 
     @memo
     def func_1(arg=1):
-        print ("arg: {}".format(arg))
         record.append(arg)
         return arg
 

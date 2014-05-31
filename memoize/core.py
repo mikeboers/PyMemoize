@@ -264,8 +264,8 @@ class MemoizedFunction(object):
         return self.master_key + ':' + key if self.master_key else key
 
     def __call__(self, *args, **kwargs):
-        args, kwargs = self._expand_args(args, kwargs)
-        return self.cache.get(self.key(args, kwargs), self.func, args, kwargs, **self.opts)
+        args, copy_kwargs = self._expand_args(args, kwargs)
+        return self.cache.get(self.key(args, copy_kwargs), self.func, args, kwargs, **self.opts)
 
     def get(self, args=(), kwargs=None, **opts):
         args, kwargs = self._expand_args(args, kwargs)

@@ -1,3 +1,7 @@
+1.0.1
+-----
+- Fixed bug where kwargs were not passed through.
+
 1.0.0
 -----
 

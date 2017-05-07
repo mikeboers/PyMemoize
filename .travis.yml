@@ -3,11 +3,14 @@ python:
     - "2.6"
     - "2.7"
     - "pypy"
-    - "3.2"
     - "3.3"
+    - "3.4"
+    - "3.5"
+    - "3.6"
+
 install:
-  - pip install . --use-mirrors
-  - pip install -r test_requirements.txt --use-mirrors
+  - pip install .
+  - pip install -r test_requirements.txt
 
 script: 
   - nosetests --with-cover --cover-branches --cover-package=memoize

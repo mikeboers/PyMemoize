@@ -1,5 +1,17 @@
+import functools
+import sys
 import time
+
 from memoize.core import *
+
+
+def py3k_only(func):
+    @functools.wraps(func)
+    def _decorated(*args, **kwargs):
+        if sys.version_info[0] < 3:
+            return
+        return func(*args, **kwargs)
+    return _decorated
 
 
 def test_basic():
@@ -263,4 +275,31 @@ def test_method_decorator():
     assert a.append(1) == 1
     assert a.append(2) == 2
     assert b.append(1) == 1
+
+
+@py3k_only
+def test_annotations():
+
+    store = {}
+    memo = Memoizer(store)
+
+    # We need to hide this function definition inside an exec for Python 2.
+    namespace = {}
+    exec('''
+
+seen = []
+def func(value: 'yyy') -> 'zzz':
+    seen.append(value)
+    return len(seen)
+
+''', namespace)
+    func = memo(namespace['func'])
+
+    assert func('x') == 1
+    assert func('x') == 1
+    assert func('y') == 2
+
+
+
+
 

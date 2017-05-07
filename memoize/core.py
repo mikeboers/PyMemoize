@@ -1,10 +1,17 @@
-import time
 import inspect
+import sys
+import time
 
 
 DEFAULT_TIMEOUT = 10
 CURRENT_PROTOCOL_VERSION = '1'
 PROTOCOL_INDEX, CREATION_INDEX, EXPIRY_INDEX, ETAG_INDEX, VALUE_INDEX = list(range(5))
+
+
+if sys.version_info[0] >= 3:
+    getargspec = lambda func: inspect.getfullargspec(func)[:4]
+else:
+    getargspec = inspect.getargspec
 
 
 class Memoizer(object):
@@ -232,10 +239,11 @@ class MemoizedFunction(object):
             opts.setdefault(k, v)
 
     def key(self, args=(), kwargs=None):
+
         # We need to normalize the signature of the function. This is only
         # really possible if we wrap the "real" function.
         kwargs = kwargs or {}
-        spec_args, _, _, spec_defaults = inspect.getargspec(self.func)
+        spec_args, _, _, spec_defaults = getargspec(self.func)
 
         # Insert kwargs into the args list by name.
         orig_args = list(args)

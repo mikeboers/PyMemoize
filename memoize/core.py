@@ -21,6 +21,15 @@ class Memoizer(object):
         kwargs['store'] = store
         self.regions = dict(default=kwargs)
 
+    def _get_key_store(self, key, opts):
+        self._expand_opts(key, opts)
+        namespace = opts.get('namespace')
+        if namespace:
+            key = '%s:%s' % (namespace, key)
+
+        store = opts['store']
+        return key, store
+
     def _expand_opts(self, key, opts):
         region = None
         while region != 'default':
@@ -38,13 +47,6 @@ class Memoizer(object):
             # Apply the region settings to the options.
             for k, v in self.regions[region].items():
                 opts.setdefault(k, v)
-
-        namespace = opts.get('namespace')
-        if namespace:
-            key = '%s:%s' % (namespace, key)
-
-        store = opts['store']
-        return key, store
 
     def _has_expired(self, data, opts):
         protocol, creation, old_expiry, old_etag, value = data
@@ -95,7 +97,7 @@ class Memoizer(object):
 
         """
         kwargs = kwargs or {}
-        key, store = self._expand_opts(key, opts)
+        key, store = self._get_key_store(key, opts)
 
         # Create a dynamic etag.
         if opts.get('etag') is None and opts.get('etagger'):
@@ -137,7 +139,7 @@ class Memoizer(object):
 
     def delete(self, key, **opts):
         """Remove a key from the cache."""
-        key, store = self._expand_opts(key, opts)
+        key, store = self._get_key_store(key, opts)
         try:
             del store[key]
         except KeyError:
@@ -145,7 +147,7 @@ class Memoizer(object):
 
     def expire_at(self, key, expiry, **opts):
         """Set the explicit unix expiry time of a key."""
-        key, store = self._expand_opts(key, opts)
+        key, store = self._get_key_store(key, opts)
         data = store.get(key)
         if data is not None:
             data = list(data)
@@ -160,7 +162,7 @@ class Memoizer(object):
 
     def ttl(self, key, **opts):
         """Get the time-to-live of a given key; None if not set."""
-        key, store = self._expand_opts(key, opts)
+        key, store = self._get_key_store(key, opts)
         if hasattr(store, 'ttl'):
             return store.ttl(key)
         data = store.get(key)
@@ -171,13 +173,13 @@ class Memoizer(object):
             return max(0, expiry - time.time()) or None
 
     def etag(self, key, **opts):
-        key, store = self._expand_opts(key, opts)
+        key, store = self._get_key_store(key, opts)
         data = store.get(key)
         return data and data[ETAG_INDEX]
 
     def exists(self, key, **opts):
         """Return if a key exists in the cache."""
-        key, store = self._expand_opts(key, opts)
+        key, store = self._get_key_store(key, opts)
         data = store.get(key)
         # Note that we do not actually delete the thing here as the max_age
         # just for this call may have triggered a False.

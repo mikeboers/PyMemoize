@@ -58,12 +58,6 @@ class Memoizer(object):
         if old_expiry and old_expiry < current_time:
             return True
 
-        # It is expired if an etag has been set and provided, but they don't
-        # match.
-        etag = opts.get('etag')
-        if etag is not None and etag != old_etag:
-            return True
-
         # The new expiry time is too old. This seems odd to do... Oh well.
         expiry = opts.get('expiry')
         if expiry and expiry < current_time:
@@ -73,6 +67,19 @@ class Memoizer(object):
         max_age = opts.get('max_age')
         if max_age is not None and (creation + max_age) < current_time:
             return True
+
+    def _cache_missed(self, data, opts):
+        '''
+        cache will be missed for these two situation:
+        1. an etag has been set in option and provided, but they don't match
+        2. the key is expired
+        for these situation, the method will return True
+        '''
+        return self._etag_not_match(data[EXPIRY_INDEX], opts.get('etag')) or \
+            self._has_expired(data, opts)
+
+    def _etag_not_match(self, old_etag, etag):
+        return etag is not None and etag != old_etag:
 
     def get(self, key, func=None, args=(), kwargs=None, **opts):
         """Manually retrieve a value from the cache, calculating as needed.
@@ -108,7 +115,7 @@ class Memoizer(object):
 
         data = store.get(key)
         if data is not None:
-            if not self._has_expired(data, opts):
+            if not self._cache_missed(data, opts):
                 return data[VALUE_INDEX]
 
         if func is None:
@@ -183,7 +190,7 @@ class Memoizer(object):
         data = store.get(key)
         # Note that we do not actually delete the thing here as the max_age
         # just for this call may have triggered a False.
-        if not data or self._has_expired(data, opts):
+        if not data or self._cache_missed(data, opts):
             return False
         return True
 

@@ -75,7 +75,7 @@ class Memoizer(object):
         2. the key is expired
         for these situation, the method will return True
         '''
-        return self._etag_not_match(data[EXPIRY_INDEX], opts.get('etag')) or \
+        return self._etag_not_match(data[ETAG_INDEX], opts.get('etag')) or \
             self._has_expired(data, opts)
 
     def _etag_not_match(self, old_etag, etag):

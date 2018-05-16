@@ -79,7 +79,7 @@ class Memoizer(object):
             self._has_expired(data, opts)
 
     def _etag_not_match(self, old_etag, etag):
-        return etag is not None and etag != old_etag:
+        return etag is not None and etag != old_etag
 
     def get(self, key, func=None, args=(), kwargs=None, **opts):
         """Manually retrieve a value from the cache, calculating as needed.

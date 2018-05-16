@@ -257,7 +257,8 @@ class MemoizedFunction(object):
         # Insert kwargs into the args list by name.
         orig_args = list(args)
         args = []
-        for i, name in enumerate(spec_args):
+
+        for name in spec_args:
             if name in kwargs:
                 args.append(kwargs.pop(name))
             elif orig_args:

@@ -48,8 +48,8 @@ class Lock(object):
                self.db.getset(self.key, expires) == current_value:
                     return True
 
-            timeout -= delay
             time.sleep(min(timeout, delay))
+            timeout -= delay
             delay *= 2
 
         return False

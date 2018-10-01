@@ -3,7 +3,7 @@ from distutils.core import setup
 
 setup(
     name='PyMemoize',
-    version='1.0.2',
+    version='1.0.3',
     description='Simple memoizing module.',
     url='http://github.com/mikeboers/PyMemoize',
     

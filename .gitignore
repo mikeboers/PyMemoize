@@ -6,6 +6,5 @@
 MANIFEST
 .coverage
 
-/venv
-/venv3
+/venv*
 /dist

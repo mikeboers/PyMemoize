@@ -58,9 +58,19 @@ class Lock(object):
         self.db.delete(self.key)
 
 
+class RedisShelf(shelve.Shelf):
+
+    def clear(self, namespace=None):
+        if namespace is not None:
+            redis = self.dict
+            keys = tuple(redis.scan_iter('{0}:*'.format(namespace)))
+            redis.delete(*keys)
+        super(RedisShelf, self).clear()
+
+
 def wrap(redis, lock_class=Lock):
     def lock(key):
         return lock_class(redis, key + '.lock')
-    db = shelve.Shelf(redis)
+    db = RedisShelf(redis)
     db.lock = lock
     return db

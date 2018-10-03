@@ -2,6 +2,9 @@ import functools
 import sys
 import time
 
+from redis import StrictRedis
+
+from memoize.redis import wrap as redis_wrap
 from memoize.core import *
 
 
@@ -137,6 +140,7 @@ def test_namespace():
 
     store = {}
     memo = Memoizer(store, namespace='ns')
+    assert memo.namespace == 'ns'
     memo.get('key', lambda: 'value')
     assert 'ns:key' in store
 
@@ -300,6 +304,43 @@ def func(value: 'yyy') -> 'zzz':
     assert func('y') == 2
 
 
+class TestStoreClear:
 
+    def test_redis_clear(self):
+        redis = StrictRedis()
+        store = redis_wrap(redis)
+        records = []
+        memo = Memoizer(store)
 
+        def func(*args, **kwargs):
+            records.append((args, kwargs))
+            return len(records)
+
+        assert memo.get('key', func) == 1
+
+        assert b'key' in redis.keys()
+
+        store.clear(namespace=memo.namespace)
+
+        assert len(tuple(store.keys())) == 0
+        assert len(tuple(redis.scan_iter('*'))) == 0
+
+    def test_redis_with_namespace_clear(self):
+        redis = StrictRedis()
+        store = redis_wrap(redis)
+        records = []
+        memo = Memoizer(store, namespace='my-namespace')
+
+        def func(*args, **kwargs):
+            records.append((args, kwargs))
+            return len(records)
+
+        assert memo.get('key', func) == 1
+
+        assert b'my-namespace:key' in redis.keys()
+
+        store.clear()
+
+        assert len(tuple(store.keys())) == 0
+        assert len(tuple(redis.scan_iter('my-namespace:*'))) == 0
 

@@ -1,3 +1,9 @@
+1.1.0
+-----
+
+- Added `namespace` attribute to `Memoizer`.
+- Added optional `namespace` parameter to `clear` method of the Redis Store, to enable more efficient clearing.
+
 1.0.1
 -----
 - Fixed bug where kwargs were not passed through.

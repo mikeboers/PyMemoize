@@ -19,6 +19,7 @@ class Memoizer(object):
 
     def __init__(self, store, **kwargs):
         kwargs['store'] = store
+        self.namespace = kwargs.get('namespace')
         self.regions = dict(default=kwargs)
 
     def _expand_opts(self, key, opts):

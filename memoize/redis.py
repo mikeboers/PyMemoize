@@ -4,7 +4,6 @@ The lock implementation was mostly lifted from
 http://chris-lamb.co.uk/2010/06/07/distributing-locking-python-and-redis/
 
 """
-
 import shelve
 
 from .time import time, sleep
@@ -67,7 +66,11 @@ class RedisShelf(shelve.Shelf):
             redis = self.dict
             keys = tuple(redis.scan_iter('{0}:*'.format(namespace)))
             redis.delete(*keys)
-        super(RedisShelf, self).clear()
+        try:
+            while True:
+                self.popitem()
+        except KeyError:
+            pass
 
 
 def wrap(redis, lock_class=Lock):

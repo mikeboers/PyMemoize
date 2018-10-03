@@ -324,6 +324,13 @@ We have provided a small wrapper and lock implementation for use with Redis.
 
     # Use!
 
+If you have many keys in your redis store then clearing the store can take a long time.
+To speed this up specify the `namespace` when you clear.
+
+    memo = memoize.Memoizer(store, namespace='cache-namespace')
+
+    store.clear(namespace=memo.namespace)
+
 Django's cache framework
 -------------------------
 

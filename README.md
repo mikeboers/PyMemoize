@@ -324,6 +324,17 @@ We have provided a small wrapper and lock implementation for use with Redis.
 
     # Use!
 
+Django's cache framework
+-------------------------
+
+If you want to integrate PyMemoize in a django project, you can use [Django's cache framework](https://docs.djangoproject.com/en/1.11/topics/cache/#accessing-the-cache) as a store for memoized values. This way, you can leverage [any cache that has a Django integration](https://docs.djangoproject.com/en/1.11/topics/cache/#setting-up-the-cache), such as Redis, Memcached, or even database cache.
+
+    import memoize.djangocache
+
+    store = memoize.djangocache.Cache('default')
+    memo = memoize.Memoizer(store, namespace='memoize')
+
+If you want to use another cache declared in your django settings, you can replace `default` with the name of the cache.
 
 Store Interface
 ---------------
@@ -375,10 +386,3 @@ Return a lock object as specified by the locking section below.
 Return the time-to-live of the given key as a float, or None if it does not exist or will not expire. If the native expiry mechanism does not support float times then take care that the returned value is less than the "real" expiry time.
 
 ie. If using a store that has second resolution, return: `native_ttl - 1`.
-
-
-
-
-
-
-

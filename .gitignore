@@ -1,9 +1,10 @@
 *.pyc
 .idea
 .tox
+*.egg-info
+
 MANIFEST
 .coverage
 
-/venv
-/venv3
+/venv*
 /dist

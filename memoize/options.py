@@ -1,5 +1,9 @@
 from functools import partial
-from collections import Callable
+
+try:
+    from collections.abc import Callable
+except ImportError:
+    from collections import Callable
 
 
 def call_or_pass(value, args, kwargs):

@@ -1,7 +1,7 @@
 (in alphabetical order)
 
+Agate Blue (@AgateBlue)
 Colin Davis (@e1ven) <colin@e1ven.com>
-Eliot Berriot (@EliotBerriot) <contact@eliotberriot.com>
 Mike Boers (@mikeboers) <github@mikeboers.com>
 Mike Boers (@mikeboers) <mboers@keypics.com> (copyright held by Western X)
 Oleg Butovich (@swayf) (obutovich@gmail.com)

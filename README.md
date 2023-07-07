@@ -22,7 +22,7 @@ Now we create the `Memoizer` object itself. Any keyword arguments will be stored
 There is a direct API for retrieving a value. We pass it the key we want, and a function that is used to calculate it.
 
     def basic_func():
-        print 'called'
+        print('called')
         return 123
 
 	# Manually retrieve a value.
@@ -54,7 +54,7 @@ Function arguments
 You can specify the positional and keyword arguments to call the function with:
 
     def adder_func(a, b):
-        print called
+        print(called)
         return a + b
 
     # Passing args...
@@ -161,7 +161,7 @@ Basic usage:
 
     @memo
     def cached_func():
-        print 'called'
+        print('called')
         return 456
 
     cached_func()
